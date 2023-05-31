@@ -1,1 +1,1 @@
-# follower
+# MSD700 'Follow Me' Repo
