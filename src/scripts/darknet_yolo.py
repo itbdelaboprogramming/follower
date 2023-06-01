@@ -124,7 +124,7 @@ class DarknetDNN:
                 cv2.rectangle(frame, (x1 + 5, y1 + 25), (x1 + 5 + text_size[0], y1 + 25 - text_size[1]), (0,0,0), cv2.FILLED)
                 cv2.putText(frame, f"{distance} m", (x1 + 5, y1 + 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
     
-    def follow_color(self, image, low_hsv, high_hsv):
+    def detect_with_color(self, image, low_hsv, high_hsv):
         # Pre-process the input image
         height, width, channels = image.shape
         blob = cv2.dnn.blobFromImage(image, self.blob_scalefactor, self.blob_size, self.blob_scalar, self.blob_swapRB, self.blob_crop, self.blob_ddepth)
@@ -203,7 +203,27 @@ class DarknetDNN:
 
             ## Save the area
             color_area.append(total_area)
-        pass
+            output_box.append([x_1, y_1, x_2, y_2])
+        
+        return color_area, output_box
+    
+    def draw_target(self, frame, color_area, output_box):
+        target_list = list(zip(color_area, output_box))
+        sorted_target_list = sorted(target_list, key=lambda x: x[0], reverse=True)
+
+        #area, bbox = zip(*sorted_target_list)
+        for i, (area, bbox) in sorted_target_list:
+            color_area = color
+            x1, y1, x2, y2 = bbox
+            
+            if i == 0:
+                color = (0, 255, 0)
+            else:
+                color = (0, 0, 255)
+            
+            cv2.rectangle(frame, (x1, y1), (x2, y2), color, 1)
+            
+        return
 
 def main():
     net = DarknetDNN()
