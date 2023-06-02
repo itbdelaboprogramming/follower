@@ -63,6 +63,8 @@ class DarknetDNN:
         self.object_classes = []
         self.object_confidences = []
         self.object_boxes = []
+        self.object_area = []
+        self.object_position = []
 
         #For every output of the DNN
         for out in output:
@@ -94,11 +96,21 @@ class DarknetDNN:
                 y1 = int(cy - h/2)
                 x2 = int(cx + w/2)
                 y2 = int(cy + h/2)
+                area = (w * h)
 
                 #Save the information about the detected object
                 self.object_classes.append(class_id)
                 self.object_confidences.append(confidence)
                 self.object_boxes.append([x1, y1, x2, y2])
+                self.object_area.append(area)
+                
+                position = 'Center'
+                if cx <= width/3:
+                    position = 'Left'
+                elif cx >= 2 * width/3:
+                    position = 'Right'
+                
+                self.object_position.append(position)
     
     def draw_detected_object(self, frame, depth_frame = None):
         #Perform Non-Maximum Suppression to remove the redundant detections
@@ -112,17 +124,26 @@ class DarknetDNN:
             cx = int((x1 + x2)/2)
             cy = int((y1 + y2)/2)
 
+            this_position = self.object_position[i]
+
             cv2.rectangle(frame, (x1, y1), (x2, y2), color, 1)
 
             text_size, _ = cv2.getTextSize(label.capitalize(), cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
             cv2.rectangle(frame, (x1 + 5, y1 + 5), (x1 + 5 + text_size[0], y1 + 5 - text_size[1]), (0,0,0), cv2.FILLED)
             cv2.putText(frame, label.capitalize(), (x1 + 5, y1 + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
+            cv2.putText(frame, this_position, (x1+5, y1+50), 0, 0.8, (255, 255, 255), 2)
             
             if depth_frame is not None:
                 distance = round(depth_frame.get_distance(cx, cy), 2)
                 text_size, _ = cv2.getTextSize(f"{distance} m", cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
                 cv2.rectangle(frame, (x1 + 5, y1 + 25), (x1 + 5 + text_size[0], y1 + 25 - text_size[1]), (0,0,0), cv2.FILLED)
                 cv2.putText(frame, f"{distance} m", (x1 + 5, y1 + 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
+    
+    def get_command(self):
+        if not self.object_area:
+            return 'Hold'
+        else:
+            return self.object_position[self.object_area.index(max(self.object_area))]
     
     def detect_with_color(self, image, low_hsv, high_hsv):
         # Pre-process the input image

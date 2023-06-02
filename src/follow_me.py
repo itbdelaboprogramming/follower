@@ -22,7 +22,7 @@ while True:
     # Get frame from camera
     frame, _ = camera.get_frame()
 
-    #frame = camera.show_fps(frame)
+    frame = camera.show_fps(frame)
 
     #ret, frame = video.read()
     #if not ret:
@@ -33,6 +33,25 @@ while True:
     
     # Draw the bounding box of the object detected
     net.draw_detected_object(frame)
+
+    # Publish the command
+    if time.time() - start_time >= 1/frequency:
+        direct = net.get_command()
+        if direct == 'Right':
+            command = 1
+        elif direct == 'Left':
+            command = 2
+        elif direct == 'Center':
+            command = 3
+        else:
+            command = 0
+        
+        rospy.loginfo(command)
+        pub.publish(command)
+
+        start_time = time.time()
+
+    
 
     # Show the result
     cv2.imshow("Video", frame)
