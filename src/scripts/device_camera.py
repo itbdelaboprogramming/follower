@@ -209,8 +209,8 @@ def main():
     cv2.setMouseCallback("Depth", camera.click_distance)
     
     while True:
-        color, depth = camera.get_frame()
-        #color, depth = camera.get_frame_filtered()
+        #color, depth = camera.get_frame()
+        color, depth = camera.get_frame_filtered()
 
         color = camera.show_fps(color)
 
