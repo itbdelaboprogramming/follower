@@ -164,6 +164,13 @@ class DeviceCamera:
         color_map = cv2.applyColorMap(depth_uint8, cv2.COLORMAP_JET)
         cv2.imshow("Depth", color_map)
 
+    def show_heat_map_2(self, depth):
+        depth_min = np.min(depth)
+        depth_max = np.max(depth)
+        depth_norm = ((depth - depth_min) / (depth_max - depth_min)) * 255
+        depth_norm = depth_norm.astype(np.uint8)
+        cv2.imshow("Depth", depth_norm)
+
     def get_frame_filtered(self):
         if self.realsense:
             # Read the incoming frame from Realsense
@@ -216,7 +223,7 @@ def main():
 
         cv2.imshow("Color", color)
         #cv2.imshow("Depth", color_map)
-        camera.show_heat_map(depth)
+        camera.show_heat_map_2(depth)
 
         key = cv2.waitKey(1)
         if key == ord('q') or key == 27:
