@@ -198,7 +198,7 @@ class DeviceCamera:
         if event == cv2.EVENT_LBUTTONDOWN:
             frame = self.pipeline.wait_for_frames()
             depth_frames = frame.get_depth_frame()
-            depth_value = depth_frames.get_distance(x, y)
+            depth_value = round(depth_frames.get_distance(x, y) * 100) 
             print("Distance at pixel ({}, {}): {}".format(x, y, depth_value))
 
 
