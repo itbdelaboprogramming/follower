@@ -212,12 +212,12 @@ class DeviceCamera:
 def main():
     #net = DarknetDNN()
     camera = DeviceCamera()
-    cv2.namedWindow("Depth")
-    cv2.setMouseCallback("Depth", camera.click_distance)
+    cv2.namedWindow("Color")
+    cv2.setMouseCallback("Color", camera.click_distance)
     
     while True:
-        #color, depth = camera.get_frame()
-        color, depth = camera.get_frame_filtered()
+        color, depth = camera.get_frame()
+        #color, depth = camera.get_frame_filtered()
 
         color = camera.show_fps(color)
 
