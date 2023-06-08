@@ -171,8 +171,10 @@ def main():
 
         #net.draw_detected_object(color, depth)
 
+        normalized_depth = cv2.normalize(depth, None, 0, 255, cv2.NORM_MINMAX)
+
         cv2.imshow("Color", color)
-        cv2.imshow("Depth", depth)
+        cv2.imshow("Depth", normalized_depth)
 
         key = cv2.waitKey(1)
         if key == ord('q') or key == 27:
