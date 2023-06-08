@@ -167,6 +167,7 @@ class DeviceCamera:
     def show_heat_map_2(self, depth):
         depth_min = np.min(depth)
         depth_max = np.max(depth)
+        print(depth_min, depth_max)
         depth_norm = ((depth - depth_min) / (depth_max - depth_min)) * 255
         depth_norm = depth_norm.astype(np.uint8)
         cv2.imshow("Depth", depth_norm)
