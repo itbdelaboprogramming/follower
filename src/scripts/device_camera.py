@@ -172,7 +172,7 @@ def main():
         #net.draw_detected_object(color, depth)
 
         cv2.imshow("Color", color)
-        #cv2.imshow("Depth", depth)
+        cv2.imshow("Depth", depth)
 
         key = cv2.waitKey(1)
         if key == ord('q') or key == 27:
