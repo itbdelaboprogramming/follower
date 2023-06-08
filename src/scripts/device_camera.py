@@ -172,10 +172,11 @@ def main():
         #net.draw_detected_object(color, depth)
 
         normalized_depth = cv2.normalize(depth, None, 0, 255, cv2.NORM_MINMAX)
+        depth_uint8 = normalized_depth.astype(np.uint8)
         #depth_min = np.min(depth)
         #depth_max = np.max(depth)
         #normalized_depth = ((depth - depth_min) / (depth_max - depth_min)) * 255
-        color_map = cv2.applyColorMap(normalized_depth, cv2.COLORMAP_JET)
+        color_map = cv2.applyColorMap(depth_uint8, cv2.COLORMAP_JET)
 
         cv2.imshow("Color", color)
         cv2.imshow("Depth", color_map)
