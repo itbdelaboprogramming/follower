@@ -164,25 +164,46 @@ class DeviceCamera:
         color_map = cv2.applyColorMap(depth_uint8, cv2.COLORMAP_JET)
         cv2.imshow("Depth", color_map)
 
+    def get_frame_filtered(self):
+        if self.realsense:
+            # Read the incoming frame from Realsense
+            frames = self.pipeline.wait_for_frames()
+
+            # Aligned the color frame and depth frame
+            aligned_frames = self.align.process(frames)
+            color_frame = aligned_frames.get_color_frame()
+            depth_frame = aligned_frames.get_depth_frame()
+
+            # Check if the stream is success or not
+            if not color_frame or not depth_frame:
+                print("Error, impossible to get the frame, make sure that the Intel Realsense camera is correctly connected")
+                return None, None
+            
+            spatial = self.rs.spatial_filter()
+            spatial.set_option(self.rs.option.holes_fill, 3)
+            filtered_depth = spatial.process(depth_frame)
+            
+            # Convert the frame into Matrix
+            color_image = np.asanyarray(color_frame.get_data())
+            depth_image = np.asanyarray(filtered_depth.get_data())
+
+            return color_image, depth_image
+        else:
+            # Read the incoming frame from Regular Camera
+            retval, frame = self.capture.read()
+
+            return frame, None
+        pass
+
 def main():
     #net = DarknetDNN()
     camera = DeviceCamera()
     
     while True:
-        color, depth = camera.get_frame()
+        #color, depth = camera.get_frame()
+        color, depth = camera.get_frame_filtered()
 
         color = camera.show_fps(color)
-
-        #net.detect_object(color)
-
-        #net.draw_detected_object(color, depth)
-
-        #normalized_depth = cv2.normalize(depth, None, 0, 255, cv2.NORM_MINMAX)
-        #depth_uint8 = normalized_depth.astype(np.uint8)
-        #depth_min = np.min(depth)
-        #depth_max = np.max(depth)
-        #normalized_depth = ((depth - depth_min) / (depth_max - depth_min)) * 255
-        #color_map = cv2.applyColorMap(depth_uint8, cv2.COLORMAP_JET)
 
         cv2.imshow("Color", color)
         #cv2.imshow("Depth", color_map)
