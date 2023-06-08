@@ -193,15 +193,24 @@ class DeviceCamera:
             retval, frame = self.capture.read()
 
             return frame, None
-        pass
+    
+    def click_distance(self, event, x, y, flags, param):
+        if event == cv2.EVENT_LBUTTONDOWN:
+            frame = self.pipeline.wait_for_frames()
+            depth_frames = frame.get_depth_frame()
+            depth_value = depth_frames.get_distance(x, y)
+            print("Distance at pixel ({}, {}): {}".format(x, y, depth_value))
+
 
 def main():
     #net = DarknetDNN()
     camera = DeviceCamera()
+    cv2.namedWindow("Depth")
+    cv2.setMouseCallback("Depth", camera.click_distance)
     
     while True:
-        #color, depth = camera.get_frame()
-        color, depth = camera.get_frame_filtered()
+        color, depth = camera.get_frame()
+        #color, depth = camera.get_frame_filtered()
 
         color = camera.show_fps(color)
 
