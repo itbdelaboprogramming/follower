@@ -208,8 +208,8 @@ class DeviceCamera:
             depth_frames = frame.get_depth_frame()
             depth_mat = np.asanyarray(depth_frames.get_data())
             #depth_value = round(depth_frames.get_distance(x, y) * 100) 
-            depth_value = depth_mat[y,x]
-            print("Distance at pixel ({}, {}): {}".format(x, y, depth_value))
+            depth_value = round(depth_mat[y,x] / 10)
+            print("Distance at pixel ({}, {}): {} cm".format(x, y, depth_value))
 
 
 def main():
