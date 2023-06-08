@@ -171,7 +171,10 @@ def main():
 
         #net.draw_detected_object(color, depth)
 
-        normalized_depth = cv2.normalize(depth, None, 0, 255, cv2.NORM_MINMAX)
+        #normalized_depth = cv2.normalize(depth, None, 0, 255, cv2.NORM_MINMAX)
+        depth_min = np.min(depth)
+        depth_max = np.max(depth)
+        normalized_depth = ((depth - depth_min) / (depth_max - depth_min)) * 255
 
         cv2.imshow("Color", color)
         cv2.imshow("Depth", normalized_depth)
