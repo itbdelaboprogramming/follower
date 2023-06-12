@@ -339,7 +339,7 @@ class DarknetDNN:
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 1)
             text_size, _ = cv2.getTextSize(f"{confidence_value}", font, 0.5, 1)
             cv2.rectangle(frame, (x1 + 5, y1 + 5), (x1 + 5 + text_size[0], y1 + 5 - text_size[1]), (0, 0, 0), cv2.FILLED)
-            cv2.putText(frame, confidence_value, (x1 + 5, y1 + 5), font, 0.5, (0, 255, 0), 1)
+            cv2.putText(frame, f"{confidence_value}", (x1 + 5, y1 + 5), font, 0.5, (0, 255, 0), 1)
             cv2.putText(frame, position_in_frame, (x1 + 5, y1 + 50), font, 0.5, (255, 255, 255), 1)
         
 
