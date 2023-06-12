@@ -337,12 +337,12 @@ class DarknetDNN:
             font = cv2.FONT_HERSHEY_SIMPLEX
 
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 1)
-            text_size, _ = cv2.getTextSize(f"{confidence_value}", font, 0.5, 1)
-            cv2.rectangle(frame, (x1 + 5, y1 + 5), (x1 + 5 + text_size[0], y1 + 5 - text_size[1]), (0, 0, 0), cv2.FILLED)
-            cv2.putText(frame, f"{confidence_value}", (x1 + 5, y1 + 5), font, 0.5, (0, 255, 0), 1)
+            text_size, _ = cv2.getTextSize(f"{confidence_value:.2f}", font, 0.5, 1)
+            cv2.rectangle(frame, (x1 + 5, y1 + 5), (x1 + 5 + text_size[0], y1 + 5 + text_size[1]), (0, 0, 0), cv2.FILLED)
+            cv2.putText(frame, f"{confidence_value:.2f}", (x1 + 5, y1 + 5), font, 0.5, (0, 255, 0), 1)
             text_size_2, _ret = cv2.getTextSize(position_in_frame, font, 0.5, 1)
-            cv2.rectangle(frame, (x1 + 5, y1 + 5 - text_size[1]), (x1 + 5 + text_size_2[0], y1 + 5 - text_size[1] - text_size_2[1]), (0, 0, 0), cv2.FILLED)
-            cv2.putText(frame, position_in_frame, (x1 + 5, y1 + 5 - text_size[1]), font, 0.5, (0, 255, 0), 1)
+            cv2.rectangle(frame, (x1 + 5, y1 + 5 + text_size[1]), (x1 + 5 + text_size_2[0], y1 + 5 + text_size[1] + text_size_2[1]), (0, 0, 0), cv2.FILLED)
+            cv2.putText(frame, position_in_frame, (x1 + 5, y1 + 5 + text_size[1]), font, 0.5, (0, 255, 0), 1)
 
     def check_color(self, image, bbox):
         pass
