@@ -19,20 +19,20 @@ while True:
 
     frame = camera.show_fps(frame)
 
-    lower_hsv = np.array([0, 140, 185])
-    upper_hsv = np.array([30, 255, 255])
+    #lower_hsv = np.array([0, 140, 185])
+    #upper_hsv = np.array([30, 255, 255])
 
-    color_area, bbox = net.detect_with_color(frame, lower_hsv, upper_hsv)
-    frame = net.draw_target(frame, color_area, bbox)
+    #color_area, bbox = net.detect_with_color(frame, lower_hsv, upper_hsv)
+    #frame = net.draw_target(frame, color_area, bbox)
     #ret, frame = video.read()
     #if not ret:
     #    break
 
     # Detect the human from the frame
-    #net.detect_object(frame)
+    bbox, confidences, positions = net.detect_human(frame)
     
     # Draw the bounding box of the object detected
-    #net.draw_detected_object(frame)
+    net.draw_human_info(frame, bbox, confidences, positions)
 
     # Show the result
     cv2.imshow("Video", frame)

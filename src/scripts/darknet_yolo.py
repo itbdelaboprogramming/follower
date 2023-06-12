@@ -245,6 +245,103 @@ class DarknetDNN:
             cv2.rectangle(frame, (x1, y1), (x2, y2), color, 1)
             
         return frame
+    
+    def detect_human(self, image):
+        #Pre-process the input image
+        height, width, channels = image.shape
+        blob = cv2.dnn.blobFromImage(image, self.blob_scalefactor, self.blob_size, self.blob_scalar, self.blob_swapRB, self.blob_crop, self.blob_ddepth)
+
+        #Pass the blob as input into the DNN
+        self.net.setInput(blob)
+
+        #Wait for the output
+        output = self.net.forward(self.output_layers)
+
+        #Detected object information
+        #self.object_classes = []
+        self.object_confidences = []
+        self.object_boxes = []
+        #self.object_area = []
+        self.object_position = []
+
+        #For every output of the DNN
+        for out in output:
+            #For every detection in output
+            for detection in out:
+                #Takes the detection scores
+                scores = detection[5:]
+
+                #The object id detected is the largest scores
+                class_id = np.argmax(scores)
+
+                #The confidence of the detected object is the scores of the detected object
+                confidence = scores[class_id]
+
+                #Filter out if the object has low confidence
+                if confidence <= self.confidence_threshold:
+                    continue
+
+                #Filter out non-human object
+                if class_id != 0:
+                    continue
+
+                #Get the location of the detected object in the frame input
+                cx = int(detection[0] * width)
+                cy = int(detection[1] * height)
+                w = int(detection[2] * width)
+                h = int(detection[3] * height)
+                x1 = int(cx - w/2)
+                y1 = int(cy - h/2)
+                x2 = int(cx + w/2)
+                y2 = int(cy + h/2)
+                area = (w * h)
+
+                #Save the information about the detected object
+                #self.object_classes.append(class_id)
+                self.object_confidences.append(confidence)
+                self.object_boxes.append([x1, y1, x2, y2])
+                #self.object_area.append(area)
+                
+                position = 'Center'
+                if cx <= width/3:
+                    position = 'Left'
+                elif cx >= 2 * width/3:
+                    position = 'Right'
+                
+                self.object_position.append(position)
+        
+        output_bbox = []
+        output_confidences = []
+        output_position = []
+
+        #Perform Non-Maximum Suppression to remove the redundant detections
+        indexes = cv2.dnn.NMSBoxes(self.object_boxes, self.object_confidences, self.confidence_threshold, self.nms_threshold)
+        for i in indexes:
+            #i = i[0]
+            #x1, y1, x2, y2 = self.object_boxes[i]
+            output_bbox.append(self.object_boxes[i])
+            output_confidences.append(self.object_confidences[i])
+            output_position.append(self.object_position[i])
+
+            cx = int((x1 + x2)/2)
+            cy = int((y1 + y2)/2)
+
+        return output_bbox, output_confidences, output_position
+    
+    def draw_human_info(self, frame, bbox, confidences, positions):
+        for box, confidence, position in zip(bbox, confidences, positions):
+            x1, y1, x2, y2 = box
+            confidence_value = confidence
+            position_in_frame = position
+
+            font = cv2.FONT_HERSHEY_SIMPLEX
+
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 1)
+            text_size, _ = cv2.getTextSize(f"{confidence_value}", font, 0.5, 1)
+            cv2.rectangle(frame, (x1 + 5, y1 + 5), (x1 + 5 + text_size[0], y1 + 5 - text_size[1]), (0, 0, 0), cv2.FILLED)
+            cv2.putText(frame, confidence_value, (x1 + 5, y1 + 5), font, 0.5, (0, 255, 0), 1)
+            cv2.putText(frame, position_in_frame, (x1 + 5, y1 + 50), font, 0.5, (255, 255, 255), 1)
+        
 
 def main():
     net = DarknetDNN()
