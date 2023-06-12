@@ -232,9 +232,9 @@ class DarknetDNN:
         target_list = list(zip(color_area, output_box))
         sorted_target_list = sorted(target_list, key=lambda x: x[0], reverse=True)
 
-        #area, bbox = zip(*sorted_target_list)
+        area, bbox = zip(*sorted_target_list)
         for i, (area, bbox) in sorted_target_list:
-            color_area = color
+            color_area = area
             x1, y1, x2, y2 = bbox
             
             if i == 0:
