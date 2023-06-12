@@ -30,7 +30,8 @@ while True:
 
     # Detect the human from the frame
     bbox, confidences, positions = net.detect_human(frame)
-    areas = net.check_color(frame, bbox, lower_hsv, upper_hsv)
+    #areas = net.check_color(frame, bbox, lower_hsv, upper_hsv)
+    areas = []
     
     # Draw the bounding box of the object detected
     net.draw_human_info(frame, bbox, confidences, positions, areas)
