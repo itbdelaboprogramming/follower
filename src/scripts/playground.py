@@ -34,7 +34,7 @@ while True:
     areas = []
     
     # Draw the bounding box of the object detected
-    net.draw_human_info(frame, bbox, confidences, positions, areas)
+    net.draw_human_info(frame, bbox, confidences, positions)
 
     # Show the result
     cv2.imshow("Video", frame)
