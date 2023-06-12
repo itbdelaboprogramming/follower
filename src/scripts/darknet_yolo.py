@@ -244,7 +244,7 @@ class DarknetDNN:
             
             cv2.rectangle(frame, (x1, y1), (x2, y2), color, 1)
             
-        return
+        return frame
 
 def main():
     net = DarknetDNN()

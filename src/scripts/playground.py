@@ -2,6 +2,7 @@ from device_camera import DeviceCamera
 from darknet_yolo import DarknetDNN
 import cv2
 import time
+import numpy as np
 
 # Initialize Camera and Darknet
 camera = DeviceCamera(4)
@@ -18,6 +19,11 @@ while True:
 
     frame = camera.show_fps(frame)
 
+    lower_hsv = np.array([0, 140, 185])
+    upper_hsv = np.array([30, 255, 255])
+
+    color_area, bbox = net.detect_with_color(frame, lower_hsv, upper_hsv)
+    frame = net.draw_target(frame, color_area, bbox)
     #ret, frame = video.read()
     #if not ret:
     #    break
