@@ -214,9 +214,9 @@ class DeviceCamera:
 
 def main():
     #net = DarknetDNN()
-    camera = DeviceCamera()
-    cv2.namedWindow("Color")
-    cv2.setMouseCallback("Color", camera.click_distance)
+    camera = DeviceCamera(0)
+    #cv2.namedWindow("Color")
+    #cv2.setMouseCallback("Color", camera.click_distance)
     
     while True:
         color, depth = camera.get_frame()
@@ -226,7 +226,7 @@ def main():
 
         cv2.imshow("Color", color)
         #cv2.imshow("Depth", color_map)
-        camera.show_heat_map_2(depth)
+        #camera.show_heat_map_2(depth)
 
         key = cv2.waitKey(1)
         if key == ord('q') or key == 27:

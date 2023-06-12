@@ -3,7 +3,7 @@ from scripts.darknet_yolo import DarknetDNN
 import cv2
 import time
 import rospy
-from std.msgs.msg import UInt8
+from std_msgs.msg import UInt8
 
 # Initialize Camera and Darknet
 camera = DeviceCamera(4)
