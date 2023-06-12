@@ -328,12 +328,12 @@ class DarknetDNN:
 
         return output_bbox, output_confidences, output_position
     
-    def draw_human_info(self, frame, bbox, confidences, positions, areas):
-        for box, confidence, position, area in zip(bbox, confidences, positions, areas):
+    def draw_human_info(self, frame, bbox, confidences, positions):
+        for box, confidence, position in zip(bbox, confidences, positions):
             x1, y1, x2, y2 = box
             confidence_value = confidence
             position_in_frame = position
-            color_conf = area
+            #color_conf = area
 
             font = cv2.FONT_HERSHEY_SIMPLEX
 
@@ -344,9 +344,9 @@ class DarknetDNN:
             text_size_2, _ret = cv2.getTextSize(position_in_frame, font, 0.5, 1)
             cv2.rectangle(frame, (x1 + 5, y1 + 5 + text_size[1]), (x1 + 5 + text_size_2[0], y1 + 5 + text_size[1] - text_size_2[1]), (0, 0, 0), cv2.FILLED)
             cv2.putText(frame, position_in_frame, (x1 + 5, y1 + 5 + text_size[1]), font, 0.5, (0, 255, 0), 1)
-            text_size_3, _ret2 = cv2.getTextSize(f"{color_conf}", font, 0.5, 1)
-            cv2.rectangle(frame, (x1 + 5, y1 + 5 + text_size[1] + text_size_2[1]), (x1 + 5 + text_size_3[0], y1 + 5 + text_size[1] - text_size_2[1] - text_size_3[1]), (0, 0, 0), cv2.FILLED)
-            cv2.putText(frame, f"{color_conf}", (x1 + 5, y1 + 5 + text_size[1] + text_size_2[1]), font, 0.5, (0, 255, 0), 1)
+            #text_size_3, _ret2 = cv2.getTextSize(f"{color_conf}", font, 0.5, 1)
+            #cv2.rectangle(frame, (x1 + 5, y1 + 5 + text_size[1] + text_size_2[1]), (x1 + 5 + text_size_3[0], y1 + 5 + text_size[1] - text_size_2[1] - text_size_3[1]), (0, 0, 0), cv2.FILLED)
+            #cv2.putText(frame, f"{color_conf}", (x1 + 5, y1 + 5 + text_size[1] + text_size_2[1]), font, 0.5, (0, 255, 0), 1)
 
     def check_color(self, image, bbox, low_hsv, upp_hsv):
         areas = []
