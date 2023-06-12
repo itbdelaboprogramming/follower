@@ -17,7 +17,7 @@ while True:
     # Get frame from camera
     frame, _ = camera.get_frame()
 
-    frame = camera.show_fps(frame)
+    
 
     lower_hsv = np.array([0, 140, 185])
     upper_hsv = np.array([30, 255, 255])
@@ -35,6 +35,8 @@ while True:
     
     # Draw the bounding box of the object detected
     net.draw_human_info(frame, bbox, confidences, positions, areas)
+
+    frame = camera.show_fps(frame)
 
     # Show the result
     cv2.imshow("Video", frame)
