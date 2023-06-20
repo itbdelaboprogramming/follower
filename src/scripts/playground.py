@@ -36,7 +36,7 @@ while True:
     
     # Draw the bounding box of the object detected
     net.draw_human_info(frame, bbox, confidences, positions, areas)
-    frame = net.hunt(frame, depth, bbox, confidences, positions, areas)
+    net.hunt(frame, depth, bbox, confidences, positions, areas)
 
     frame = camera.show_fps(frame)
 

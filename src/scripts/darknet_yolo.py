@@ -381,7 +381,7 @@ class DarknetDNN:
     def hunt(self, frame, depth, bbox, confidences, postitions, areas):
         # Check if the bbox is empty or not
         if not bbox:
-            return None
+            return 
         
         # Get the maximum color
         max_areas = max(areas)
@@ -405,7 +405,7 @@ class DarknetDNN:
         text_size, _ret2 = cv2.getTextSize(f"Distance: {distance} cm", font, 0.5, 1)
         cv2.rectangle(frame, (cx, cy + text_size[1]), (cx, cy + text_size[1] ), (0, 0, 0), cv2.FILLED)
         cv2.putText(frame, f"Distance: {distance} cm", (cx, cy + text_size[1]), font, 0.5, (0, 255, 0), 1)
-        return frame
+        return 
         
 
 def main():
