@@ -5,7 +5,8 @@ import time
 import numpy as np
 
 # Initialize Camera and Darknet
-camera = DeviceCamera(4)
+#camera = DeviceCamera(4)
+camera = DeviceCamera(0)
 net = DarknetDNN()
 #video = cv2.VideoCapture("C:\\Users\\luthf\\Videos\\Captures\\safety_vest_video.mp4")
 
@@ -15,7 +16,7 @@ frequency = 10 # in Hz
 
 while True:
     # Get frame from camera
-    frame, _ = camera.get_frame()
+    frame, depth = camera.get_frame()
 
     
 
@@ -35,6 +36,7 @@ while True:
     
     # Draw the bounding box of the object detected
     net.draw_human_info(frame, bbox, confidences, positions, areas)
+    frame = net.hunt(frame, depth, bbox, confidences, positions, areas)
 
     frame = camera.show_fps(frame)
 

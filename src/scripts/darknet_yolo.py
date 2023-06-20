@@ -337,7 +337,7 @@ class DarknetDNN:
 
             font = cv2.FONT_HERSHEY_SIMPLEX
 
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 1)
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 1)
             text_size, _ = cv2.getTextSize(f"{confidence_value:.2f}", font, 0.5, 1)
             cv2.rectangle(frame, (x1 + 5, y1 + 5), (x1 + 5 + text_size[0], y1 + 5 - text_size[1]), (0, 0, 0), cv2.FILLED)
             cv2.putText(frame, f"{confidence_value:.2f}", (x1 + 5, y1 + 5), font, 0.5, (0, 255, 0), 1)
@@ -377,6 +377,34 @@ class DarknetDNN:
             areas.append(total_area)
         
         return areas
+    
+    def hunt(self, frame, depth, bbox, confidences, postitions, areas):
+        # Check if the bbox is empty or not
+        if not bbox:
+            return None
+        
+        # Get the maximum color
+        max_areas = max(areas)
+        max_index = areas.index(max_areas)
+
+        # Get the target info
+        x1, y1, x2, y2 = bbox[max_index]
+        confidence = confidences[max_index]
+        postition = postitions[max_index]
+        distance = None
+        cx = int((x1 + x2)/2)
+        cy = int((y1 + y2)/2)
+
+        # Check if depth exist
+        if depth:
+            distance = round(depth[cy,cx]/10)
+
+        # Draw the info
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        text_size, _ret2 = cv2.getTextSize(f"Distance: {distance} cm", font, 0.5, 1)
+        cv2.rectangle(frame, (cx, cy + text_size[1]), (cx, cy + text_size[1] ), (0, 0, 0), cv2.FILLED)
+        cv2.putText(frame, f"Distance: {distance} cm", (cx, cy + text_size[1]), font, 0.5, (0, 255, 0), 1)
+        return frame
         
 
 def main():
