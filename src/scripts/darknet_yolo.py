@@ -401,6 +401,7 @@ class DarknetDNN:
 
         # Draw the info
         font = cv2.FONT_HERSHEY_SIMPLEX
+        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 1)
         text_size, _ret2 = cv2.getTextSize(f"Distance: {distance} cm", font, 0.5, 1)
         cv2.rectangle(frame, (cx, cy + text_size[1]), (cx, cy + text_size[1] ), (0, 0, 0), cv2.FILLED)
         cv2.putText(frame, f"Distance: {distance} cm", (cx, cy + text_size[1]), font, 0.5, (0, 255, 0), 1)
