@@ -396,7 +396,7 @@ class DarknetDNN:
         cy = int((y1 + y2)/2)
 
         # Check if depth exist
-        if depth:
+        if depth.any():
             distance = round(depth[cy,cx]/10)
 
         # Draw the info
