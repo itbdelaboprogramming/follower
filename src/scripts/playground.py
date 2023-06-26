@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from device_camera import DeviceCamera
 from darknet_yolo import DarknetDNN
 import cv2
