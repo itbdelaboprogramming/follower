@@ -377,7 +377,38 @@ class DarknetDNN:
             areas.append(total_area)
         
         return areas
+    
+    def hunt(self, frame, depth, bbox, confidences, postitions, areas):
+        # Check if the bbox is empty or not
+        if not bbox:
+            return 
         
+        # Get the maximum color
+        max_areas = max(areas)
+        max_index = areas.index(max_areas)
+
+        # Get the target info
+        x1, y1, x2, y2 = bbox[max_index]
+        confidence = confidences[max_index]
+        postition = postitions[max_index]
+        distance = None
+        cx = int((x1 + x2)/2)
+        cy = int((y1 + y2)/2)
+
+        # Check if depth exist
+        #print(postition)
+        # print("888888888")
+        # exit()
+        if depth.any():
+            distance = round(depth[cy,cx]/10)
+
+        # Draw the info
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 1)
+        text_size, _ret2 = cv2.getTextSize(f"Distance: {distance} cm", font, 0.5, 1)
+        cv2.rectangle(frame, (cx, cy + text_size[1]), (cx, cy + text_size[1] ), (0, 0, 0), cv2.FILLED)
+        cv2.putText(frame, f"Distance: {distance} cm", (cx, cy + text_size[1]), font, 0.5, (0, 255, 0), 1)
+        return 
 
 def main():
     net = DarknetDNN()
@@ -386,7 +417,11 @@ def main():
     while True:
         _, frame = cap.read()
 
+        low_hsv = np.array([0, 221, 102], dtype=np.uint8)
+        high_hsv = np.array([73, 255, 255], dtype=np.uint8)
+
         net.detect_object(frame)
+        net.detect_with_color(frame, low_hsv, high_hsv)
         net.draw_detected_object(frame)
 
         cv2.imshow("Video", frame)
