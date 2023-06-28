@@ -435,6 +435,13 @@ class DarknetDNN:
         #Wait for the output
         output = self.net.forward(self.output_layers)
 
+        #Object Holder
+        self.bbox = []                  #Format is x1, y1, x2, y2
+        self.confidences = []           
+        self.positions = []
+        self.color_confidences = []
+        self.distances = []             # value in cm
+
         #Temporary boxes before NMS
         object_bbox = []
         object_confidences = []
@@ -530,8 +537,18 @@ class DarknetDNN:
 
             #Draw the confidence info
             confidence_text_size, _ = cv2.getTextSize(f"{confidence:.2f}", font, 0.5, 1)
-            cv2.rectangle(frame, (x1, y1), (x1 + confidence_text_size[0], confidence_text_size[1]), (0,0,0), cv2.FILLED)
+            cv2.rectangle(frame, (x1, y1), (x1 + confidence_text_size[0], y1 + confidence_text_size[1]), (0,0,0), cv2.FILLED)
             cv2.putText(frame, f"{confidence:.2f}", (x1, y1 + confidence_text_size[1]), font, 0.5, color, 1)
+
+            #Draw the position info
+            position_text_size, _ = cv2.getTextSize(f"{position}", font, 0.5, 1)
+            cv2.rectangle(frame, (x1, y1 + confidence_text_size[1]), (x1 + position_text_size[0], y1 + confidence_text_size[1] + position_text_size[1]), (0,0,0), cv2.FILLED)
+            cv2.putText(frame, f"{position}", (x1, y1 + confidence_text_size[1] + position_text_size[1]), font, 0.5, color, 1)
+
+            #Draw the color confidence info
+            color_text_size, _ = cv2.getTextSize(f"{color_confidence}", font, 0.5, 1)
+            cv2.rectangle(frame, (x1, y1 + confidence_text_size[1] + position_text_size[1]), (x1 + color_text_size[0], y1 + confidence_text_size[1] + position_text_size[1] + color_text_size[1]), (0,0,0), cv2.FILLED)
+            cv2.putText(frame, f"{color_confidence}", (x1, y1 + confidence_text_size[1] + position_text_size[1] + color_text_size[1]), font, 0.5, color, 1)
             pass
 
         pass
