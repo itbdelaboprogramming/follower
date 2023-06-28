@@ -489,7 +489,7 @@ class DarknetDNN:
             distance = None
 
             #Save the location of bbox
-            self.bbox.append(x1_value, y1_value, x2_value, y2_value)
+            self.bbox.append([x1_value, y1_value, x2_value, y2_value])
 
             #Save the confidences of the bbox
             self.confidences.append(confidence_value)
