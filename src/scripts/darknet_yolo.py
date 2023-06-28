@@ -60,6 +60,12 @@ class DarknetDNN:
         self.color_confidences = []
         self.distances = []             # value in cm
 
+        #target value
+        self.target_confidence = None
+        self.target_position = None
+        self.target_color_confidence = None
+        self.target_distance = None
+
     def detect_object(self, image):
         #Pre-process the input image
         height, width, channels = image.shape
@@ -515,10 +521,20 @@ class DarknetDNN:
     def draw_hunted_target(self, frame):
         # get the main target
         max_value = max(self.color_confidences, default=0)
+        #target value
+        self.target_confidence = None
+        self.target_position = None
+        self.target_color_confidence = None
+        self.target_distance = None
         if max_value == 0:
             max_index = None
         else:
             max_index = self.color_confidences.index(max_value)
+            self.target_confidence = self.confidences[max_index]
+            self.target_position = self.positions[max_index]
+            self.target_color_confidence = self.color_confidences[max_index]
+            self.target_distance = self.distances[max_index]
+        #print(max_index)
         color = (0, 0, 255)
 
         for i, value in enumerate(self.color_confidences):
@@ -529,11 +545,15 @@ class DarknetDNN:
             distance = self.distances[i]
 
             font = cv2.FONT_HERSHEY_SIMPLEX
-            if i == max_index:
+            #print(f"i : {i} and max index : {max_index}")
+            if i == max_index and color_confidence >= self.color_threshold:
+                
                 color = (0, 255, 0)
 
             #Draw the bounding box
             cv2.rectangle(frame, (x1, y1), (x2, y2), color, 1)
+            cv2.rectangle(frame, (x2, y1), (x2 - 20, y1 + 20), (0,0,0), cv2.FILLED)
+            cv2.putText(frame, f"{i}", (x2 - 20, y1 + 20), font, 0.5, color, 1)
 
             #Draw the confidence info
             confidence_text_size, _ = cv2.getTextSize(f"{confidence:.2f}", font, 0.5, 1)
@@ -551,10 +571,26 @@ class DarknetDNN:
             cv2.putText(frame, f"{color_confidence}", (x1, y1 + confidence_text_size[1] + position_text_size[1] + color_text_size[1]), font, 0.5, color, 1)
 
             #Draw the distance info
-            
+            distance_text_size, _ = cv2.getTextSize(f"{distance} cm", font, 0.5, 1)
+            cv2.rectangle(frame, (x1, y1 + confidence_text_size[1] + position_text_size[1] + color_text_size[1]), (x1 + distance_text_size[0], y1 + confidence_text_size[1] + position_text_size[1] + color_text_size[1] + distance_text_size[1]), (0,0,0), cv2.FILLED)
+            cv2.putText(frame, f"{distance} cm", (x1, y1 + confidence_text_size[1] + position_text_size[1] + color_text_size[1] + distance_text_size[1]), font, 0.5, color, 1)
             pass
 
         pass
+
+    def get_target_confidence(self):
+        return self.target_confidence
+    
+    def get_target_position(self):
+        return self.target_position
+    
+    def get_target_color_confidence(self):
+        return self.target_color_confidence
+    
+    def get_target_distance(self):
+        return self.target_distance
+        
+
 
 def main():
     net = DarknetDNN()
@@ -571,6 +607,11 @@ def main():
         #net.draw_detected_object(frame)
         net.hunt(frame)
         net.draw_hunted_target(frame)
+
+        print(net.get_target_confidence())
+        print(f"Position : {net.get_target_position()}")
+        print(f"Color confidence : {net.get_target_color_confidence()}")
+        print(f"Distance : {net.get_target_distance()}")
 
         cv2.imshow("Video", frame)
 
