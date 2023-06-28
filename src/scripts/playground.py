@@ -5,7 +5,8 @@ import time
 import numpy as np
 
 # Initialize Camera and Darknet
-camera = DeviceCamera(4)
+#camera = DeviceCamera(4)
+camera = DeviceCamera(0)
 net = DarknetDNN()
 #video = cv2.VideoCapture("C:\\Users\\luthf\\Videos\\Captures\\safety_vest_video.mp4")
 

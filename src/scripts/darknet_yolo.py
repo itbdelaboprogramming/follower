@@ -377,6 +377,26 @@ class DarknetDNN:
             areas.append(total_area)
         
         return areas
+    
+    def hunt(self, frame, bbox, confidences, positions, areas):
+        # Check if the bbox is empty or not
+        if not bbox:
+            return None
+        
+        # get the maximum color area
+        max_areas = max(areas)
+        max_index = areas.index(max_areas)
+
+        # check if the area is significant
+        if max_areas > 1000:
+            pass
+
+        # Draw the target
+        
+
+
+        
+        pass
         
 
 def main():
