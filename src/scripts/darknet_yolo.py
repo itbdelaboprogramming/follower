@@ -549,6 +549,9 @@ class DarknetDNN:
             color_text_size, _ = cv2.getTextSize(f"{color_confidence}", font, 0.5, 1)
             cv2.rectangle(frame, (x1, y1 + confidence_text_size[1] + position_text_size[1]), (x1 + color_text_size[0], y1 + confidence_text_size[1] + position_text_size[1] + color_text_size[1]), (0,0,0), cv2.FILLED)
             cv2.putText(frame, f"{color_confidence}", (x1, y1 + confidence_text_size[1] + position_text_size[1] + color_text_size[1]), font, 0.5, color, 1)
+
+            #Draw the distance info
+            
             pass
 
         pass
