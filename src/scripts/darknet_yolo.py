@@ -49,6 +49,10 @@ class DarknetDNN:
         self.nms_threshold = 0.4
         self.color_threshold  = 0
 
+        #Color HSV Range
+        self.lower_hsv = np.array([0, 0, 0])
+        self.upper_hsv = np.array([179, 255, 255])
+
         #Object Holder
         self.bbox = []                  #Format is x1, y1, x2, y2
         self.confidences = []           
@@ -385,11 +389,153 @@ class DarknetDNN:
             areas.append(total_area)
         
         return areas
+
+    def check_position(self, cx, width):
+        position = 'Center'
+        if cx <= width/3 :
+            position = 'Left'
+        if cx >= 2 * width/3:
+            position = 'Right'
+        return position
+
+    def get_color_confidence(self,image, bbox, low_hsv, upp_hsv):
+        x1, y1, x2, y2 = bbox
+
+        if x1 < 0:
+            x1 = 0
+        if x2 > 640:
+            x2 = 640
+        if y1 < 0:
+            y1 = 0
+        if y2 > 480:
+            y2 = 480
+
+        roi = image[y1:y2, x1:x2]
+        roi = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+
+        mask = cv2.inRange(roi, low_hsv, upp_hsv)
+
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            
+        total_area = 0
+        for contour in contours:
+            area = cv2.contourArea(contour)
+            total_area += area
+
+        return total_area
+
+    def hunt(self, image, depth_image = None):
+        #Pre-process the input image
+        height, width, channels = image.shape
+        blob = cv2.dnn.blobFromImage(image, self.blob_scalefactor, self.blob_size, self.blob_scalar, self.blob_swapRB, self.blob_crop, self.blob_ddepth)
+
+        #Pass the blob as input into the DNN
+        self.net.setInput(blob)
+
+        #Wait for the output
+        output = self.net.forward(self.output_layers)
+
+        #Temporary boxes before NMS
+        object_bbox = []
+        object_confidences = []
+
+        #For every output of the DNN
+        for out in output:
+            #For every detection in output
+            for detection in out:
+                #Takes the detection scores
+                scores = detection[5:]
+
+                #The object id detected is the largest scores
+                class_id = np.argmax(scores)
+
+                #The confidence of the detected object is the scores of the detected object
+                confidence = scores[class_id]
+
+                #Filter out if the object has low confidence
+                if confidence <= self.confidence_threshold:
+                    continue
+
+                #Filter out non-human object
+                if class_id != 0:
+                    continue
+
+                #Get the location of the detected object in the frame input
+                cx = int(detection[0] * width)
+                cy = int(detection[1] * height)
+                w = int(detection[2] * width)
+                h = int(detection[3] * height)
+                x1 = int(cx - w/2)
+                y1 = int(cy - h/2)
+                x2 = int(cx + w/2)
+                y2 = int(cy + h/2)
+                #position = self.check_position(cx, width)
+
+                #Save detected object temporary before NMS
+                object_bbox.append([x1, y1, x2, y2])
+                object_confidences.append(confidence)
         
+        #Perform Non-Maximum Suppression to remove the redundant detections
+        indexes = cv2.dnn.NMSBoxes(object_bbox, object_confidences, self.confidence_threshold, self.nms_threshold)
+
+        #Iterate through all object that pass the NMS
+        for i in indexes:
+            x1_value, y1_value, x2_value, y2_value = object_bbox[i]
+            cx_value = int((x1_value + x2_value)/2)
+            cy_value = int((y1_value + y2_value)/2)
+            confidence_value = object_confidences[i]
+            position = self.check_position(cx_value, width)
+            color_confidence = self.get_color_confidence(image, object_bbox[i], self.lower_hsv, self.upper_hsv)
+            distance = None
+
+            #Save the location of bbox
+            self.bbox.append(x1_value, y1_value, x2_value, y2_value)
+
+            #Save the confidences of the bbox
+            self.confidences.append(confidence_value)
+
+            #Save the position
+            self.positions.append(position)
+
+            #Save the color confidences
+            self.color_confidences.append(color_confidence)
+            
+            #Save the distance
+            if depth_image is not None:
+                distance = round(depth_image[cy_value,cx_value]/10)
+            self.distances.append(distance)
+
+    def draw_hunted_target(self, frame):
+        # get the main target
+        max_value = max(self.color_confidences)
+        max_index = self.color_confidences.index(max_value)
+        color = (0, 0, 255)
+
+        for i, value in enumerate(self.color_confidences):
+            x1, y1, x2, y2 = self.bbox[i]
+            confidence = self.confidences[i]
+            position = self.positions[i]
+            color_confidence = self.color_confidences[i]
+            distance = self.distances[i]
+
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            if i == max_index:
+                color = (0, 255, 0)
+
+            #Draw the bounding box
+            cv2.rectangle(frame, (x1, y1), (x2, y2), color, 1)
+
+            #Draw the confidence info
+            confidence_text_size, _ = cv2.getTextSize(f"{confidence:.2f}", font, 0.5, 1)
+            cv2.rectangle(frame, (x1, y1), (x1 + confidence_text_size[0], confidence_text_size[1]), (0,0,0), cv2.FILLED)
+            cv2.putText(frame, f"{confidence:.2f}", (x1, y1 + confidence_text_size[1]), font, 0.5, color, 1)
+            pass
+
+        pass
 
 def main():
     net = DarknetDNN()
-    cap = cv2.VideoCapture(4)
+    cap = cv2.VideoCapture(0)
 
     while True:
         _, frame = cap.read()
@@ -397,9 +543,11 @@ def main():
         low_hsv = np.array([0, 221, 102], dtype=np.uint8)
         high_hsv = np.array([73, 255, 255], dtype=np.uint8)
 
-        net.detect_object(frame)
-        net.detect_with_color(frame, low_hsv, high_hsv)
-        net.draw_detected_object(frame)
+        #net.detect_object(frame)
+        #net.detect_with_color(frame, low_hsv, high_hsv)
+        #net.draw_detected_object(frame)
+        net.hunt(frame)
+        net.draw_hunted_target(frame)
 
         cv2.imshow("Video", frame)
 
