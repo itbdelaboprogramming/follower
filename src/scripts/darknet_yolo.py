@@ -508,7 +508,10 @@ class DarknetDNN:
     def draw_hunted_target(self, frame):
         # get the main target
         max_value = max(self.color_confidences, default=0)
-        max_index = self.color_confidences.index(max_value)
+        if max_value == 0:
+            max_index = None
+        else:
+            max_index = self.color_confidences.index(max_value)
         color = (0, 0, 255)
 
         for i, value in enumerate(self.color_confidences):
