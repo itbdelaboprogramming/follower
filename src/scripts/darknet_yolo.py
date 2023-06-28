@@ -66,6 +66,19 @@ class DarknetDNN:
         self.target_color_confidence = None
         self.target_distance = None
 
+    def set_hsv_range(self, low, high):
+        self.lower_hsv = low
+        self.upper_hsv = high
+
+    def set_color_threshold(self, value):
+        self.color_threshold = value
+
+    def set_confidence_threshold(self, value):
+        self.confidence_threshold = value
+
+    def set_nms_threshold(self, value):
+        self.nms_threshold = value
+
     def detect_object(self, image):
         #Pre-process the input image
         height, width, channels = image.shape

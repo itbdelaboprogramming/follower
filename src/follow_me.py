@@ -1,6 +1,7 @@
 from scripts.device_camera import DeviceCamera
 from scripts.darknet_yolo import DarknetDNN
 import cv2
+import numpy as np
 import time
 import rospy
 from std_msgs.msg import UInt8
@@ -18,30 +19,36 @@ pub = rospy.Publisher('rover_command', UInt8, queue_size=10)
 start_time = time.time()
 frequency = 10 # in Hz
 
-while True:
-    # Get frame from camera
-    frame, _ = camera.get_frame()
+low_hsv = np.array([0, 221, 102], dtype=np.uint8)
+high_hsv = np.array([73, 255, 255], dtype=np.uint8)
 
-    frame = camera.show_fps(frame)
+net.set_hsv_range(low_hsv, high_hsv)
+net.set_color_threshold(0)
+
+while not rospy.is_shutdown():
+    # Get frame from camera
+    frame, depth = camera.get_frame()
 
     #ret, frame = video.read()
     #if not ret:
     #    break
 
     # Detect the human from the frame
-    net.detect_object(frame)
+    #net.detect_object(frame)
+    net.hunt(frame, depth)
     
     # Draw the bounding box of the object detected
-    net.draw_detected_object(frame)
+    #net.draw_detected_object(frame)
+    net.draw_hunted_target(frame)
 
     # Publish the command
     if time.time() - start_time >= 1/frequency:
-        direct = net.get_command()
-        if direct == 'Right':
+        position = net.get_target_position()
+        if position == 'Right':
             command = 1
-        elif direct == 'Left':
+        elif position == 'Left':
             command = 2
-        elif direct == 'Center':
+        elif position == 'Center':
             command = 3
         else:
             command = 0
@@ -51,7 +58,7 @@ while True:
 
         start_time = time.time()
 
-    
+    frame = camera.show_fps(frame)
 
     # Show the result
     cv2.imshow("Video", frame)
