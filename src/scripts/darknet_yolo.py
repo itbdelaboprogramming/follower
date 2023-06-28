@@ -47,6 +47,14 @@ class DarknetDNN:
         #Threshold for detecting object
         self.confidence_threshold = 0.3
         self.nms_threshold = 0.4
+        self.color_threshold  = 0
+
+        #Object Holder
+        self.bbox = []                  #Format is x1, y1, x2, y2
+        self.confidences = []           
+        self.positions = []
+        self.color_confidences = []
+        self.distances = []             # value in cm
 
     def detect_object(self, image):
         #Pre-process the input image
