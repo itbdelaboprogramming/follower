@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from scripts.device_camera import DeviceCamera
 from scripts.darknet_yolo import DarknetDNN
 import cv2
@@ -5,15 +6,16 @@ import numpy as np
 import time
 import rospy
 from std_msgs.msg import UInt8
+from follower.msg import TargetState
 
 # Initialize Camera and Darknet
-camera = DeviceCamera(4)
+camera = DeviceCamera(0)
 net = DarknetDNN()
 #video = cv2.VideoCapture("C:\\Users\\luthf\\Videos\\Captures\\safety_vest_video.mp4")
 
 # Initialize ROS Node
 rospy.init_node('follow_me_node')
-pub = rospy.Publisher('rover_command', UInt8, queue_size=10)
+pub = rospy.Publisher('rover_command', TargetState, queue_size=10)
 
 # Time stamp
 start_time = time.time()
@@ -43,18 +45,27 @@ while not rospy.is_shutdown():
 
     # Publish the command
     if time.time() - start_time >= 1/frequency:
+        msg = TargetState()
+        msg.target_distance = -1.0
+        msg.target_position = 0
+
         position = net.get_target_position()
-        if position == 'Right':
-            command = 1
-        elif position == 'Left':
-            command = 2
-        elif position == 'Center':
-            command = 3
-        else:
-            command = 0
+        distance = net.get_target_distance()
         
-        rospy.loginfo(command)
-        pub.publish(command)
+        if position == 'Right':
+            msg.target_position = 1
+        elif position == 'Left':
+            msg.target_position = 2
+        elif position == 'Center':
+            msg.target_position = 3
+        else:
+            msg.target_position = 0
+        
+        if distance is not None:
+            msg.target_distance = distance
+
+        rospy.loginfo(msg)
+        pub.publish(msg)
 
         start_time = time.time()
 
@@ -68,3 +79,5 @@ while not rospy.is_shutdown():
     if key == 27 or key == ord('q'):
         print(f"Key {key} is pressed")
         break
+
+camera.stop()
