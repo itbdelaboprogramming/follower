@@ -6,6 +6,10 @@ ROOT_DIR = os.path.dirname(__file__)
 
 class DarknetDNN:
     def __init__(self, dnn_model = "weights/yolov3-tiny.weights", dnn_config = "cfg/yolov3-tiny.cfg"):
+        """Class for detecting object using Darknet framework.
+        @param: dnn_model = Weights file of the DNN, by default is yolov3-tiny.weights
+        @param: dnn_config = Config file of the DNN, by default is yolov3-tiny.cfg
+        """
         #Check the installed OpenCV version
         print("Loading on OpenCV version", cv2.__version__)
 
@@ -21,21 +25,18 @@ class DarknetDNN:
         self.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
         self.net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
-        self.classes = []
-
         with open(self.dnn_name_lists, "r") as f:
             self.classes = [line.strip() for line in f.readlines()]
         
         self.layer_names = self.net.getLayerNames()
-        #self.colors = np.random.uniform(0, 255, size=(len(self.classes), 3))
 
         #Check the type of output layer, some older version OpenCV has a different type of output layer
-        print("Output layer type is", type(self.net.getUnconnectedOutLayers()[0]))
+        #print("Output layer type is", type(self.net.getUnconnectedOutLayers()[0]))
         if isinstance(self.net.getUnconnectedOutLayers()[0], np.int32):
             self.output_layers = [self.layer_names[i - 1] for i in self.net.getUnconnectedOutLayers()]
         else:
             self.output_layers = [self.layer_names[i[0] - 1] for i in self.net.getUnconnectedOutLayers()]
-
+        
         #Blob parameter
         self.blob_scalefactor = 1/255.0
         self.blob_size = (320, 320)
@@ -53,54 +54,72 @@ class DarknetDNN:
         self.lower_hsv = np.array([0, 0, 0])
         self.upper_hsv = np.array([179, 255, 255])
 
-        #Object Holder
-        self.bbox = []                  #Format is x1, y1, x2, y2
-        self.confidences = []           
-        self.positions = []
-        self.color_confidences = []
-        self.distances = []             # value in cm
+        pass
 
-        #target value
-        self.target_confidence = None
-        self.target_position = None
-        self.target_color_confidence = None
-        self.target_distance = None
-
-    def set_hsv_range(self, low, high):
+    def set_hsv_range(self, low: np.ndarray, high: np.ndarray):
+        """ Method to set hsv range for color checking.
+        @param:
+         low: lower bound hsv in np.array([hue, sat, val]) format.
+         high: upper bound hsv in np.array([hue, sat, val]) format.
+        """
         self.lower_hsv = low
         self.upper_hsv = high
+        pass
 
-    def set_color_threshold(self, value):
+    def set_color_threshold(self, value: float):
+        """ Method for setting the value of color_threshold for color checking (default value is 0).
+        @param:
+         value: the value for color threshold.
+        """
         self.color_threshold = value
+        pass
 
-    def set_confidence_threshold(self, value):
+    def set_confidence_threshold(self, value: float):
+        """ Method for setting the value of confidence_threshold for object detection (default value is 0.3).
+        @param:
+         value: the value for confiedence threshold.
+        """
         self.confidence_threshold = value
+        pass
 
-    def set_nms_threshold(self, value):
+    def set_nms_threshold(self, value: float):
+        """ Method for setting the value of nms_threshold for object detection (default value is 0.4).
+        @param:
+         value: the value for confiedence threshold.
+        """
         self.nms_threshold = value
+        pass
 
-    def detect_object(self, image):
+    def detect_object(self, image: np.ndarray, target_id:int = None):
+        """ Method to detect object within the frame. The target id specifies what object to detect, None by default. The id can be seen as the index of the coco.names list.
+        @param
+         image: the image to scan for detection in OpenCV Matrix format <numpy.ndarray>.
+         target_id: object id to detect. For detecting Person, use id = 0.
+        This will return the list of detected object.   
+        """
         #Pre-process the input image
-        height, width, channels = image.shape
-        blob = cv2.dnn.blobFromImage(image, self.blob_scalefactor, self.blob_size, self.blob_scalar, self.blob_swapRB, self.blob_crop, self.blob_ddepth)
+        self.image_height, self.image_width, self.image_channels = image.shape
+        blob = cv2.dnn.blobFromImage(image, 
+                                     self.blob_scalefactor, 
+                                     self.blob_size, 
+                                     self.blob_scalar, 
+                                     self.blob_swapRB, 
+                                     self.blob_crop, 
+                                     self.blob_ddepth)
 
         #Pass the blob as input into the DNN
         self.net.setInput(blob)
 
         #Wait for the output
-        output = self.net.forward(self.output_layers)
+        outputs:tuple = self.net.forward(self.output_layers)
 
         #Detected object information
         self.object_classes = []
         self.object_confidences = []
         self.object_boxes = []
-        self.object_area = []
-        self.object_position = []
 
-        #For every output of the DNN
-        for out in output:
-            #For every detection in output
-            for detection in out:
+        for output in outputs:
+            for detection in output:
                 #Takes the detection scores
                 scores = detection[5:]
 
@@ -115,319 +134,63 @@ class DarknetDNN:
                     continue
 
                 #Filter out non-human object
-                if class_id != 0:
+                if target_id is not None and class_id != target_id:
                     continue
 
                 #Get the location of the detected object in the frame input
-                cx = int(detection[0] * width)
-                cy = int(detection[1] * height)
-                w = int(detection[2] * width)
-                h = int(detection[3] * height)
+                cx = int(detection[0] * self.image_width)
+                cy = int(detection[1] * self.image_height)
+                w = int(detection[2] * self.image_width)
+                h = int(detection[3] * self.image_height)
                 x1 = int(cx - w/2)
                 y1 = int(cy - h/2)
                 x2 = int(cx + w/2)
                 y2 = int(cy + h/2)
-                area = (w * h)
 
-                #Save the information about the detected object
-                self.object_classes.append(class_id)
-                self.object_confidences.append(confidence)
                 self.object_boxes.append([x1, y1, x2, y2])
-                self.object_area.append(area)
-                
-                position = 'Center'
-                if cx <= width/3:
-                    position = 'Left'
-                elif cx >= 2 * width/3:
-                    position = 'Right'
-                
-                self.object_position.append(position)
-    
-    def draw_detected_object(self, frame, depth_frame = None):
-        #Perform Non-Maximum Suppression to remove the redundant detections
-        indexes = cv2.dnn.NMSBoxes(self.object_boxes, self.object_confidences, self.confidence_threshold, self.nms_threshold)
-        for i in indexes:
-            #i = i[0]
-            x1, y1, x2, y2 = self.object_boxes[i]
-            label = self.classes[self.object_classes[i]]
-            color = (0, 255, 0)
-
-            cx = int((x1 + x2)/2)
-            cy = int((y1 + y2)/2)
-
-            this_position = self.object_position[i]
-
-            cv2.rectangle(frame, (x1, y1), (x2, y2), color, 1)
-
-            text_size, _ = cv2.getTextSize(label.capitalize(), cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-            cv2.rectangle(frame, (x1 + 5, y1 + 5), (x1 + 5 + text_size[0], y1 + 5 - text_size[1]), (0,0,0), cv2.FILLED)
-            cv2.putText(frame, label.capitalize(), (x1 + 5, y1 + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
-            cv2.putText(frame, this_position, (x1+5, y1+50), 0, 0.8, (255, 255, 255), 2)
-            
-            if depth_frame is not None:
-                distance = round(depth_frame.get_distance(cx, cy), 2)
-                text_size, _ = cv2.getTextSize(f"{distance} m", cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-                cv2.rectangle(frame, (x1 + 5, y1 + 25), (x1 + 5 + text_size[0], y1 + 25 - text_size[1]), (0,0,0), cv2.FILLED)
-                cv2.putText(frame, f"{distance} m", (x1 + 5, y1 + 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
-    
-    def get_command(self):
-        if not self.object_area:
-            return 'Hold'
-        else:
-            return self.object_position[self.object_area.index(max(self.object_area))]
-    
-    def detect_with_color(self, image, low_hsv, high_hsv):
-        # Pre-process the input image
-        height, width, channels = image.shape
-        blob = cv2.dnn.blobFromImage(image, self.blob_scalefactor, self.blob_size, self.blob_scalar, self.blob_swapRB, self.blob_crop, self.blob_ddepth)
-
-        # Pass the blob as input into the DNN
-        self.net.setInput(blob)
-
-        # Wait for the output
-        output = self.net.forward(self.output_layers)
-
-        # Detected object information
-        #object_classes = []
-        object_confidences = []
-        object_boxes = []
-
-        # For every output of the DNN
-        for out in output:
-            # For every detection in output
-            for detection in out:
-                # Takes the detection scores
-                scores = detection[5:]
-
-                # The object id detected is the largest scores
-                class_id = np.argmax(scores)
-
-                # The confidence of the detected object is the scores of the detected object
-                confidence = scores[class_id]
-
-                # Filter out if the object has low confidence
-                if confidence <= self.confidence_threshold:
-                    continue
-
-                # Filter out non-human object
-                if class_id != 0:
-                    continue
-
-                # Get the location of the detected object in the frame input
-                cx = int(detection[0] * width)
-                cy = int(detection[1] * height)
-                w = int(detection[2] * width)
-                h = int(detection[3] * height)
-                x1 = int(cx - w/2)
-                y1 = int(cy - h/2)
-                x2 = int(cx + w/2)
-                y2 = int(cy + h/2)
-
-                # Save the information about the detected object
-                #self.object_classes.append(class_id)
-                object_confidences.append(confidence)
-                object_boxes.append([x1, y1, x2, y2])
-        
-        # Perform Non-Maximum Suppression to remove the redundant detections
-        indexes = cv2.dnn.NMSBoxes(object_boxes, object_confidences, self.confidence_threshold, self.nms_threshold)
-        color_area = []
-        output_box = []
-        for i in indexes:
-            x_1, y_1, x_2, y_2 = object_boxes[i]
-            color = (0, 255, 0)
-
-            # Check the color of the person
-            ## Take the roi of our detected human
-            roi = image[y_1:y_2, x_1:x_2]
-            roi = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
-
-            ## Apply color filtering to the object
-            mask = cv2.inRange(roi, low_hsv, high_hsv)
-
-            ## Find the contours of the color
-            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-            ## Calculate the Area
-            total_area = 0
-            for contour in contours:
-                area = cv2.contourArea(contour)
-                total_area += area
-
-            ## Save the area
-            color_area.append(total_area)
-            output_box.append([x_1, y_1, x_2, y_2])
-        
-        return color_area, output_box
-    
-    def draw_target(self, frame, color_area, output_box):
-        target_list = list(zip(color_area, output_box))
-        sorted_target_list = sorted(target_list, key=lambda x: x[0], reverse=True)
-
-        area, bbox = zip(*sorted_target_list)
-        for i, (area, bbox) in sorted_target_list:
-            color_area = area
-            x1, y1, x2, y2 = bbox
-            
-            if i == 0:
-                color = (0, 255, 0)
-            else:
-                color = (0, 0, 255)
-            
-            cv2.rectangle(frame, (x1, y1), (x2, y2), color, 1)
-            
-        return frame
-    
-    def detect_human(self, image):
-        #Pre-process the input image
-        height, width, channels = image.shape
-        blob = cv2.dnn.blobFromImage(image, self.blob_scalefactor, self.blob_size, self.blob_scalar, self.blob_swapRB, self.blob_crop, self.blob_ddepth)
-
-        #Pass the blob as input into the DNN
-        self.net.setInput(blob)
-
-        #Wait for the output
-        output = self.net.forward(self.output_layers)
-
-        #Detected object information
-        #self.object_classes = []
-        self.object_confidences = []
-        self.object_boxes = []
-        #self.object_area = []
-        self.object_position = []
-
-        #For every output of the DNN
-        for out in output:
-            #For every detection in output
-            for detection in out:
-                #Takes the detection scores
-                scores = detection[5:]
-
-                #The object id detected is the largest scores
-                class_id = np.argmax(scores)
-
-                #The confidence of the detected object is the scores of the detected object
-                confidence = scores[class_id]
-
-                #Filter out if the object has low confidence
-                if confidence <= self.confidence_threshold:
-                    continue
-
-                #Filter out non-human object
-                if class_id != 0:
-                    continue
-
-                #Get the location of the detected object in the frame input
-                cx = int(detection[0] * width)
-                cy = int(detection[1] * height)
-                w = int(detection[2] * width)
-                h = int(detection[3] * height)
-                x1 = int(cx - w/2)
-                y1 = int(cy - h/2)
-                x2 = int(cx + w/2)
-                y2 = int(cy + h/2)
-                area = (w * h)
-
-                #Save the information about the detected object
-                #self.object_classes.append(class_id)
+                #self.object_boxes.append([cx, cy, w, h])
+                self.object_classes.append(self.classes[class_id])
                 self.object_confidences.append(confidence)
-                self.object_boxes.append([x1, y1, x2, y2])
-                #self.object_area.append(area)
-                
-                position = 'Center'
-                if cx <= width/3:
-                    position = 'Left'
-                elif cx >= 2 * width/3:
-                    position = 'Right'
-                
-                self.object_position.append(position)
-        
-        output_bbox = []
-        output_confidences = []
-        output_position = []
 
-        #Perform Non-Maximum Suppression to remove the redundant detections
-        indexes = cv2.dnn.NMSBoxes(self.object_boxes, self.object_confidences, self.confidence_threshold, self.nms_threshold)
+        #Perform NMS to the detected object to eliminate redundant detection
+        indexes = cv2.dnn.NMSBoxes(self.object_boxes, 
+                                   self.object_confidences, 
+                                   self.confidence_threshold, 
+                                   self. nms_threshold)
+        self.final_boxes = []
+        self.final_classes = []
+        self.final_confidences = []
+        self.final_color_confidences = []
         for i in indexes:
-            #i = i[0]
-            #x1, y1, x2, y2 = self.object_boxes[i]
-            output_bbox.append(self.object_boxes[i])
-            output_confidences.append(self.object_confidences[i])
-            output_position.append(self.object_position[i])
+            self.final_boxes.append(self.object_boxes[i])
+            self.final_classes.append(self.object_classes[i])
+            self.final_confidences.append(self.object_confidences[i])
+            color_confidences = self.calculate_color_confidences(image,
+                                                                 self.object_boxes[i],
+                                                                 self.lower_hsv,
+                                                                 self.upper_hsv)
+            self.final_color_confidences.append(color_confidences)
 
-            cx = int((x1 + x2)/2)
-            cy = int((y1 + y2)/2)
+        self.find_target()
 
-        return output_bbox, output_confidences, output_position
-    
-    def draw_human_info(self, frame, bbox, confidences, positions, areas):
-        for box, confidence, position, area in zip(bbox, confidences, positions, areas):
-            x1, y1, x2, y2 = box
-            confidence_value = confidence
-            position_in_frame = position
-            color_conf = area
+        #return self.final_boxes
 
-            font = cv2.FONT_HERSHEY_SIMPLEX
+    def calculate_color_confidences(self, image: np.ndarray, bbox: list, low_hsv: np.ndarray, upp_hsv: np.ndarray):
+        """ Method to calculate total area of pixel within the boundary of two hsv values.
+        @param:
+         image: image of the frame to scan in np.ndarray format
+         bbox: bounding box coordinate to calculate [x1, y1, x2, y2]
+         low_hsv: lower bound of the hsv value
+         upp_hsv: upper bound of the hsv value
 
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 1)
-            text_size, _ = cv2.getTextSize(f"{confidence_value:.2f}", font, 0.5, 1)
-            cv2.rectangle(frame, (x1 + 5, y1 + 5), (x1 + 5 + text_size[0], y1 + 5 - text_size[1]), (0, 0, 0), cv2.FILLED)
-            cv2.putText(frame, f"{confidence_value:.2f}", (x1 + 5, y1 + 5), font, 0.5, (0, 255, 0), 1)
-            text_size_2, _ret = cv2.getTextSize(position_in_frame, font, 0.5, 1)
-            cv2.rectangle(frame, (x1 + 5, y1 + 5 + text_size[1]), (x1 + 5 + text_size_2[0], y1 + 5 + text_size[1] - text_size_2[1]), (0, 0, 0), cv2.FILLED)
-            cv2.putText(frame, position_in_frame, (x1 + 5, y1 + 5 + text_size[1]), font, 0.5, (0, 255, 0), 1)
-            text_size_3, _ret2 = cv2.getTextSize(f"{color_conf}", font, 0.5, 1)
-            cv2.rectangle(frame, (x1 + 5, y1 + 5 + text_size[1] + text_size_2[1]), (x1 + 5 + text_size_3[0], y1 + 5 + text_size[1] + text_size_2[1] - text_size_3[1]), (0, 0, 0), cv2.FILLED)
-            cv2.putText(frame, f"{color_conf}", (x1 + 5, y1 + 5 + text_size[1] + text_size_2[1]), font, 0.5, (0, 255, 0), 1)
-
-    def check_color(self, image, bbox, low_hsv, upp_hsv):
-        areas = []
-        for box in bbox:
-            x1, y1, x2, y2 = box
-
-            if x1 < 0:
-                x1 = 0
-            if x2 > 640:
-                x2 = 640
-            if y1 < 0:
-                y1 = 0
-            if y2 > 480:
-                y2 = 480
-
-            roi = image[y1:y2, x1:x2]
-            roi = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
-
-            mask = cv2.inRange(roi, low_hsv, upp_hsv)
-
-            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            
-            total_area = 0
-            for contour in contours:
-                area = cv2.contourArea(contour)
-                total_area += area
-            
-            areas.append(total_area)
-        
-        return areas
-
-    def check_position(self, cx, width):
-        position = 'Center'
-        if cx <= width/3 :
-            position = 'Left'
-        if cx >= 2 * width/3:
-            position = 'Right'
-        return position
-
-    def get_color_confidence(self,image, bbox, low_hsv, upp_hsv):
+        @return:
+         total_area of the color in image
+        """
         x1, y1, x2, y2 = bbox
-
-        if x1 < 0:
-            x1 = 0
-        if x2 > 640:
-            x2 = 640
-        if y1 < 0:
-            y1 = 0
-        if y2 > 480:
-            y2 = 480
+        x1 = np.clip(x1, 0, self.image_width)
+        y1 = np.clip(y1, 0, self.image_height)
+        x2 = np.clip(x2, 0, self.image_width)
+        y2 = np.clip(y2, 0, self.image_height)
 
         roi = image[y1:y2, x1:x2]
         roi = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
@@ -435,174 +198,161 @@ class DarknetDNN:
         mask = cv2.inRange(roi, low_hsv, upp_hsv)
 
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            
+
         total_area = 0
         for contour in contours:
             area = cv2.contourArea(contour)
             total_area += area
 
         return total_area
-
-    def hunt(self, image, depth_image = None):
-        #Pre-process the input image
-        height, width, channels = image.shape
-        blob = cv2.dnn.blobFromImage(image, self.blob_scalefactor, self.blob_size, self.blob_scalar, self.blob_swapRB, self.blob_crop, self.blob_ddepth)
-
-        #Pass the blob as input into the DNN
-        self.net.setInput(blob)
-
-        #Wait for the output
-        output = self.net.forward(self.output_layers)
-
-        #Object Holder
-        self.bbox = []                  #Format is x1, y1, x2, y2
-        self.confidences = []           
-        self.positions = []
-        self.color_confidences = []
-        self.distances = []             # value in cm
-
-        #Temporary boxes before NMS
-        object_bbox = []
-        object_confidences = []
-
-        #For every output of the DNN
-        for out in output:
-            #For every detection in output
-            for detection in out:
-                #Takes the detection scores
-                scores = detection[5:]
-
-                #The object id detected is the largest scores
-                class_id = np.argmax(scores)
-
-                #The confidence of the detected object is the scores of the detected object
-                confidence = scores[class_id]
-
-                #Filter out if the object has low confidence
-                if confidence <= self.confidence_threshold:
-                    continue
-
-                #Filter out non-human object
-                if class_id != 0:
-                    continue
-
-                #Get the location of the detected object in the frame input
-                cx = int(detection[0] * width)
-                cy = int(detection[1] * height)
-                w = int(detection[2] * width)
-                h = int(detection[3] * height)
-                x1 = int(cx - w/2)
-                y1 = int(cy - h/2)
-                x2 = int(cx + w/2)
-                y2 = int(cy + h/2)
-                #position = self.check_position(cx, width)
-
-                #Save detected object temporary before NMS
-                object_bbox.append([x1, y1, x2, y2])
-                object_confidences.append(confidence)
-        
-        #Perform Non-Maximum Suppression to remove the redundant detections
-        indexes = cv2.dnn.NMSBoxes(object_bbox, object_confidences, self.confidence_threshold, self.nms_threshold)
-
-        #Iterate through all object that pass the NMS
-        for i in indexes:
-            x1_value, y1_value, x2_value, y2_value = object_bbox[i]
-            cx_value = int((x1_value + x2_value)/2)
-            cy_value = int((y1_value + y2_value)/2)
-            confidence_value = object_confidences[i]
-            position = self.check_position(cx_value, width)
-            color_confidence = self.get_color_confidence(image, object_bbox[i], self.lower_hsv, self.upper_hsv)
-            distance = None
-
-            #Save the location of bbox
-            self.bbox.append([x1_value, y1_value, x2_value, y2_value])
-
-            #Save the confidences of the bbox
-            self.confidences.append(confidence_value)
-
-            #Save the position
-            self.positions.append(position)
-
-            #Save the color confidences
-            self.color_confidences.append(color_confidence)
-            
-            #Save the distance
-            if depth_image is not None:
-                distance = round(depth_image[cy_value,cx_value]/10)
-            self.distances.append(distance)
-
-    def draw_hunted_target(self, frame):
-        # get the main target
-        max_value = max(self.color_confidences, default=0)
-        #target value
+    
+    def find_target(self):
+        """Function to get the target by finding target with maximum color confidences."""
+        self.target_index = None
+        self.target_box = None
+        self.target_class = None
         self.target_confidence = None
-        self.target_position = None
         self.target_color_confidence = None
-        self.target_distance = None
-        if max_value == 0:
-            max_index = None
-        else:
-            max_index = self.color_confidences.index(max_value)
-            self.target_confidence = self.confidences[max_index]
-            self.target_position = self.positions[max_index]
-            self.target_color_confidence = self.color_confidences[max_index]
-            self.target_distance = self.distances[max_index]
-        #print(max_index)
-        color = (0, 0, 255)
 
-        for i, value in enumerate(self.color_confidences):
-            x1, y1, x2, y2 = self.bbox[i]
-            confidence = self.confidences[i]
-            position = self.positions[i]
-            color_confidence = self.color_confidences[i]
-            distance = self.distances[i]
+        if len(self.final_boxes) != 0:
+            self.target_index = np.argmax(self.final_color_confidences)
+            self.target_box = self.final_boxes[self.target_index]
+            self.target_class = self.final_classes[self.target_index]
+            self.target_confidence = self.final_confidences[self.target_index]
+            self.target_color_confidence = self.final_color_confidences[self.target_index]
+            if self.target_color_confidence < self.color_threshold:
+                self.target_index = None
+                self.target_box = None
+                self.target_class = None
+                self.target_confidence = None
+                self.target_color_confidence = None
+        
+    def get_target_box(self):
+        """Function to get target bounding box."""
+        return self.target_box
+    
+    def get_target_class(self):
+        """Function to get target class."""
+        return self.target_class
+    
+    def get_target_confidence(self):
+        """Function to get target confidence."""
+        return self.target_confidence
+    
+    def get_target_color_confidence(self):
+        """Function to get target color confidence."""
+        return self.target_color_confidence
+    
+    def get_target_center(self):
+        """Function to get target center"""
+        if self.target_box is not None:
+            x1, y1, x2, y2 = self.target_box
+            cx = int((x1 + x2)/2)
+            cy = int((y1 + y2)/2)
+            return cx, cy
+        else:
+            return None, None
+        
+    def get_target_position(self):
+        """Function to get target position. Image is divided into 3 sector in x axis. If the target is on the Left, Center or Right it will return String with that sector, else it will return 'Hold'."""
+        cx, cy = self.get_target_center()
+        
+        if cx is None:
+            return 'Hold'
+        
+        if cx <= self.image_width/3:
+            return 'Left'
+        elif cx >= 2 * self.image_width/3:
+            return 'Right'
+        else:
+            return 'Center'
+        
+    def get_target_distance(self, depth: np.ndarray):
+        """Function to get the target distance in cm.
+        @param:
+         depth: depth image from IntelRealsense in np.ndarray format
+        """
+        if depth is None:
+            return None
+        else:
+            cx, cy = self.get_target_center()
+            return round(depth[cy, cx]/10)
+        
+    def show_target(self, image: np.ndarray, info: bool = False):
+        """Method to show all the detected object and target info onto the frame.
+        @param:
+         image: image of the frame to drawn the info in np.ndarray format.
+         info: if True it will show all the info of the object (default is False).
+        """
+        
+        for i, _ in enumerate(self.final_boxes):
+            x1, y1, x2, y2 = self.final_boxes[i]
+            label = self.final_classes[i]
+            confidence = self.final_confidences[i]
+            color_confidence = self.final_color_confidences[i]
 
             font = cv2.FONT_HERSHEY_SIMPLEX
-            #print(f"i : {i} and max index : {max_index}")
-            if i == max_index and color_confidence >= self.color_threshold:
-                
+            if i == self.target_index:
+                color = (0, 0, 255)
+            else:
                 color = (0, 255, 0)
 
             #Draw the bounding box
-            cv2.rectangle(frame, (x1, y1), (x2, y2), color, 1)
-            cv2.rectangle(frame, (x2, y1), (x2 - 20, y1 + 20), (0,0,0), cv2.FILLED)
-            cv2.putText(frame, f"{i}", (x2 - 20, y1 + 20), font, 0.5, color, 1)
+            cv2.rectangle(image, (x1, y1), (x2, y2), color, 1)
+            
+            if info:
+                #Draw the id of object detected
+                cv2.rectangle(image, (x2, y1), (x2 - 20, y1 + 20), (0,0,0), cv2.FILLED)
+                cv2.putText(image, f"{i}", (x2 - 20, y1 + 20), font, 0.5, color, 1)
 
-            #Draw the confidence info
-            confidence_text_size, _ = cv2.getTextSize(f"{confidence:.2f}", font, 0.5, 1)
-            cv2.rectangle(frame, (x1, y1), (x1 + confidence_text_size[0], y1 + confidence_text_size[1]), (0,0,0), cv2.FILLED)
-            cv2.putText(frame, f"{confidence:.2f}", (x1, y1 + confidence_text_size[1]), font, 0.5, color, 1)
+                #Draw the label info
+                label_text_size, _ = cv2.getTextSize(f"{label}", font, 0.5, 1)
+                cv2.rectangle(image, (x1, y1), (x1 + label_text_size[0], y1 + label_text_size[1]), (0,0,0), cv2.FILLED)
+                cv2.putText(image, f"{label}", (x1, y1 + label_text_size[1]), font, 0.5, color, 1)
 
-            #Draw the position info
-            position_text_size, _ = cv2.getTextSize(f"{position}", font, 0.5, 1)
-            cv2.rectangle(frame, (x1, y1 + confidence_text_size[1]), (x1 + position_text_size[0], y1 + confidence_text_size[1] + position_text_size[1]), (0,0,0), cv2.FILLED)
-            cv2.putText(frame, f"{position}", (x1, y1 + confidence_text_size[1] + position_text_size[1]), font, 0.5, color, 1)
+                #Draw the confidence info
+                confidence_text_size, _ = cv2.getTextSize(f"{confidence:.2f}", font, 0.5, 1)
+                cv2.rectangle(image, (x1, y1 + label_text_size[1]), (x1 + confidence_text_size[0], y1 + label_text_size[1] + confidence_text_size[1]), (0,0,0), cv2.FILLED)
+                cv2.putText(image, f"{confidence:.2f}", (x1, y1 + label_text_size[1] + confidence_text_size[1]), font, 0.5, color, 1)
 
-            #Draw the color confidence info
-            color_text_size, _ = cv2.getTextSize(f"{color_confidence}", font, 0.5, 1)
-            cv2.rectangle(frame, (x1, y1 + confidence_text_size[1] + position_text_size[1]), (x1 + color_text_size[0], y1 + confidence_text_size[1] + position_text_size[1] + color_text_size[1]), (0,0,0), cv2.FILLED)
-            cv2.putText(frame, f"{color_confidence}", (x1, y1 + confidence_text_size[1] + position_text_size[1] + color_text_size[1]), font, 0.5, color, 1)
-
-            #Draw the distance info
-            distance_text_size, _ = cv2.getTextSize(f"{distance} cm", font, 0.5, 1)
-            cv2.rectangle(frame, (x1, y1 + confidence_text_size[1] + position_text_size[1] + color_text_size[1]), (x1 + distance_text_size[0], y1 + confidence_text_size[1] + position_text_size[1] + color_text_size[1] + distance_text_size[1]), (0,0,0), cv2.FILLED)
-            cv2.putText(frame, f"{distance} cm", (x1, y1 + confidence_text_size[1] + position_text_size[1] + color_text_size[1] + distance_text_size[1]), font, 0.5, color, 1)
-            pass
-
+                #Draw the color confidence info
+                color_text_size, _ = cv2.getTextSize(f"{color_confidence}", font, 0.5, 1)
+                cv2.rectangle(image, (x1, y1 + label_text_size[1] + confidence_text_size[1]), (x1 + color_text_size[0], y1 + label_text_size[1] + confidence_text_size[1] + color_text_size[1]), (0,0,0), cv2.FILLED)
+                cv2.putText(image, f"{color_confidence}", (x1, y1 + label_text_size[1] + confidence_text_size[1] + color_text_size[1]), font, 0.5, color, 1)
+                
         pass
+    
 
-    def get_target_confidence(self):
-        return self.target_confidence
-    
-    def get_target_position(self):
-        return self.target_position
-    
-    def get_target_color_confidence(self):
-        return self.target_color_confidence
-    
-    def get_target_distance(self):
-        return self.target_distance
+    """
+    Function/method below are just for testing
+    """
         
+    def show_detected_object(self, frame):
+        for i, _ in enumerate(self.object_boxes):
+            x1, y1, x2, y2 = self.object_boxes[i]
+            #cx, cy, w, h = self.object_boxes[i]
+            label = self.object_classes[i]
+            color = (0, 255, 0)
+
+            cv2.rectangle(frame, (x1, y1), (x2, y2), color, 1)
+
+            text_size, _ = cv2.getTextSize(label.capitalize(), cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+            cv2.rectangle(frame, (x1 + 5, y1 + 5), (x1 + 5 + text_size[0], y1 + 5 - text_size[1]), (0,0,0), cv2.FILLED)
+            cv2.putText(frame, label.capitalize(), (x1 + 5, y1 + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
+    
+    def show_detected_nms_object(self, frame):
+        for i, _ in enumerate(self.final_boxes):
+            x1, y1, x2, y2 = self.final_boxes[i]
+            #cx, cy, w, h = self.object_boxes[i]
+            label = self.final_classes[i]
+            color = (0, 0, 255)
+
+            cv2.rectangle(frame, (x1, y1), (x2, y2), color, 1)
+
+            text_size, _ = cv2.getTextSize(label.capitalize(), cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+            cv2.rectangle(frame, (x1 + 5, y1 + 5), (x1 + 5 + text_size[0], y1 + 5 - text_size[1]), (0,0,0), cv2.FILLED)
+            cv2.putText(frame, label.capitalize(), (x1 + 5, y1 + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
+    
 
 
 def main():
@@ -614,12 +364,6 @@ def main():
 
         low_hsv = np.array([0, 221, 102], dtype=np.uint8)
         high_hsv = np.array([73, 255, 255], dtype=np.uint8)
-
-        #net.detect_object(frame)
-        #net.detect_with_color(frame, low_hsv, high_hsv)
-        #net.draw_detected_object(frame)
-        net.hunt(frame)
-        net.draw_hunted_target(frame)
 
         print(net.get_target_confidence())
         print(f"Position : {net.get_target_position()}")

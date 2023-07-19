@@ -1,79 +1,87 @@
-#!/usr/bin/env python3
-
-from device_camera import DeviceCamera
-from darknet_yolo import DarknetDNN
 import cv2
 import time
-import numpy as np
+from darknet_yolo import DarknetDNN
+from tracker import ObjectTracker
+from darknet_yolo_2 import DarknetDNN as DN
 
-import rospy
-from std_msgs.msg import UInt8
+def constrain(val, low, high):
+    if val < low:
+        return low
+    elif val > high:
+        return high
+    else:
+        return val
 
-# Initialize Camera and Darknet
-camera = DeviceCamera(0)
 net = DarknetDNN()
-#video = cv2.VideoCapture("C:\\Users\\luthf\\Videos\\Captures\\safety_vest_video.mp4")
+cap = cv2.VideoCapture(0)
+tr = ObjectTracker()
 
-# Time stamp
+bbox = None
+tracking = False
+frame_count = 0
 start_time = time.time()
-frequency = 10 # in Hz
 
-rospy.init_node('follow_me_node')
-pub = rospy.Publisher('rover_command', UInt8, queue_size=10)
+net2 = DN()
+net2.set_hsv_range()
+net2.set_color_threshold()
+net2.set_confidence_threshold()
+net2.set_nms_threshold()
+net2.detect_object()
 
-cmd = UInt8()
 
-rate = rospy.Rate(100)
-while not rospy.is_shutdown():
-    # Get frame from camera
-    frame,depth = camera.get_frame()
-
-    lower_hsv = np.array([0, 140, 185])
-    upper_hsv = np.array([30, 255, 255])
-
-    # color_area, bbox = net.detect_with_color(frame, lower_hsv, upper_hsv)
-    # frame = net.draw_target(frame, color_area, bbox)
-    # ret, frame = video.read()
-    # if not ret:
-    #    break
-
-    # Detect the human from the frame
-    bbox, confidences, positions = net.detect_human(frame)
-    areas = net.check_color(frame, bbox, lower_hsv, upper_hsv)
-    #areas = []
+while True:
+    retval, frame = cap.read()
+    #print(frame.shape)
+    frame_count += 1
     
-    # Draw the bounding box of the object detected
-    net.draw_human_info(frame, bbox, confidences, positions, areas)
-    net.hunt(frame, depth, bbox, confidences, positions, areas)
 
-    #Publish the command
-    try:
-        if positions[0] == 'Right':
-            cmd = 1
-        elif positions[0] == 'Left':
-            cmd = 2
-        elif positions[0] == 'Center':
-            cmd = 3
+    if tracking:
+        #tracker2 = cv2.legacy.TrackerMedianFlow_create()
+        tr.create(7)
+        net.hunt(frame)
+        net.draw_hunted_target(frame)
+        bbox = net.get_target_bbox()
+        #print(bbox)
+        if bbox is not None:
+            x1, y1, x2, y2 = bbox
+            x1 = constrain(x1, 0, 640)
+            y1 = constrain(y1, 0, 480)
+            x2 = constrain(x2, 0, 640)
+            y2 = constrain(y2, 0, 480)
+            kotak = [x1, y1, x2-x1, y2-y1]
+            #print(kotak)
+            ret = tr.set_target(frame, kotak)
+            #print(ret)
+            #ret = tracker2.init(frame, kotak)
+            print(ret)
+            tracking = True
+    
+    if tracking:
+        
+        #success, box = tracker2.update(frame)
+        success, box = tr.update(frame)
+        #success, box = tr.tracker.update(frame)
+
+        if success:
+            #print("Tracking")
+            x1, y1, w, h = [int(v) for v in box]
+            cv2.rectangle(frame, (x1, y1), (x1 + w , y1 + h), (255,0,0), 2)
         else:
-            cmd = 0
-    except BaseException as e:
-        cmd = 0
-        print(e)
-        pass
-        
-        
-    print(positions, cmd)
-    pub.publish(cmd)
+            #print("Not Tracking")
+            #tracker2 = None
+            tr.create(0)
+            #tr.tracker = None
+            tracking = False
 
-    start_time = time.time()
-
-    #Draw grid
-    #camera.create_grid()
+    current_time = time.time()
+    elapsed_time = current_time - start_time
+    if elapsed_time >= 1:
+        fps = round(frame_count/elapsed_time, 2)
+        start_time = current_time
+        frame_count = 0
+        print(fps)
     
-    frame = camera.show_fps(frame)
-
-    # Show the result
-    cv2.imshow("Video", frame)
+    cv2.imshow("Object", frame)
 
     # Exit condition
     key = cv2.waitKey(1)
@@ -81,4 +89,8 @@ while not rospy.is_shutdown():
         print(f"Key {key} is pressed")
         break
 
-    rate.sleep()
+cap.release()
+cv2.destroyAllWindows()
+
+
+
