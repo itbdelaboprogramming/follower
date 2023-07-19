@@ -8,3 +8,4 @@ src/scripts/weights/yolov3.weights
 src/scripts/cfg/yolov3.cfg
 src/scripts/playground_2.py
 src/scripts/darknet_yolo_2.py
+README2.md
