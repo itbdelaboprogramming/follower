@@ -8,9 +8,9 @@ import cv2
 import numpy as np
 import time
 
-#import rospy
-#from std_msgs.msg import UInt8
-#from follower.msg import TargetState
+import rospy
+from std_msgs.msg import UInt8
+from follower.msg import TargetState
 
 # Initialize Camera and Darknet
 camera = DeviceCamera(0)
@@ -19,8 +19,8 @@ tracker = ObjectTracker(4)
 #video = cv2.VideoCapture("C:\\Users\\luthf\\Videos\\Captures\\safety_vest_video.mp4")
 
 # Initialize ROS Node
-#rospy.init_node('follow_me_node')
-#pub = rospy.Publisher('rover_command', TargetState, queue_size=10)
+rospy.init_node('follow_me_node')
+pub = rospy.Publisher('rover_command', TargetState, queue_size=10)
 
 # Time stamp
 start_time = time.time()
@@ -39,27 +39,15 @@ while True: #not rospy.is_shutdown():
     tracker.track_object(frame, net)
     print(tracker.get_target_position())
 
-    #ret, frame = video.read()
-    #if not ret:
-    #    break
-
-    # Detect the human from the frame
-    #net.detect_object(frame)
-    #net.hunt(frame, depth)
-    
-    # Draw the bounding box of the object detected
-    #net.draw_detected_object(frame)
-    #net.draw_hunted_target(frame)
-
     # Publish the command
-    """
+    """"""
     if time.time() - start_time >= 1/frequency:
         msg = TargetState()
         msg.target_distance = -1.0
         msg.target_position = 0
 
-        position = net.get_target_position()
-        distance = net.get_target_distance()
+        position = tracker.get_target_position()
+        distance = tracker.get_target_distance()
         
         if position == 'Right':
             msg.target_position = 1
@@ -77,7 +65,7 @@ while True: #not rospy.is_shutdown():
         pub.publish(msg)
 
         start_time = time.time()
-    """
+    
     frame = camera.show_fps(frame)
 
     # Show the result
