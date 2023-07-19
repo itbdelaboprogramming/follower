@@ -2,11 +2,7 @@ import cv2
 import numpy as np
 from darknet_yolo import DarknetDNN
 
-class Algorithm:
-    BOOSTING = cv2.legacy.TrackerBoosting.create()
-
 class ObjectTracker(object):
-    """docstring for ObjectTracker."""
     def __init__(self, algorithm: int = 0):
         """
         The algorithm list are:
@@ -28,7 +24,6 @@ class ObjectTracker(object):
     def create(self):
         """
         Method to create an object tracker from OpenCV library.
-        
         """
         if self.algorithm == 0:
             self.tracker = None
@@ -49,29 +44,40 @@ class ObjectTracker(object):
         else:
             self.tracker = None
     
-    
-    def set_target(self, frame, bounding_box):
+    def set_target(self, frame: np.ndarray, bounding_box: list):
         """
         Function to set the target that you want to track.
-        Need 2 parameters:
-        frame: the image or frame that we want to scan.
-        bounding_box: the coordinate of object that we want to track within the frame. The format for the bounding_box are [x, y, w, h] where x and y are the coordinate of the top-left corner of the bounding box, w and h are the width and height of the bounding box.
+        @param:
+         frame: the image or frame that we want to scan.
+         bounding_box: the coordinate of object that we want to track within the frame. The format for the bounding_box are [x, y, w, h] where x and y are the coordinate of the top-left corner of the bounding box, w and h are the width and height of the bounding box.
+        
         This function will return True if the target initiation is success and will return false otherwise.
         """
         self.image_height, self.image_width, self.image_channels = frame.shape
         return self.tracker.init(frame, bounding_box)
 
-
-    def update(self, frame):
+    def update(self, frame: np.ndarray):
+        """Function to update the frame from last tracked object.
+        @param:
+         frame: the frame of input camera or image
+        @return:
+         [True || False, [Bounding Box]] will return True if the tracked object still exist in the current frame and false otherwise. It also wil returun the bounding box of tracked object in current frame.
+        """
         #success, self.target_bounding_box = self.tracker.update(frame)
         return self.tracker.update(frame)
     
     def clear(self):
+        """This method will clear the tracking object"""
         self.tracker = None
     
     def not_tracking(self, frame: np.ndarray, net: DarknetDNN):
+        """This method is for detecting a person using DarknetDNN and then initiate a tracking object by selecting the target for object tracking.
+        @param:
+         frame: the current frame input for detection and tracking.
+         net: DarknetDNN object for object detection.
+        """
         self.create()
-        net.detect_object(frame)
+        net.detect_object(frame, 0)
         net.show_target(frame)
         bbox = net.get_target_box()
         
@@ -83,6 +89,10 @@ class ObjectTracker(object):
             #print(ret)
     
     def tracking(self, frame: np.ndarray):
+        """This method is for tracking and updating the bounding box for the tracked object after detecting it.
+        @param:
+         frame: the current input frame from camera.
+        """
         success, self.target_bounding_box = self.update(frame)
         if success:
             x1, y1, w, h = [int(n) for n in self.target_bounding_box]
@@ -98,6 +108,11 @@ class ObjectTracker(object):
         pass
     
     def track_object(self, frame: np.ndarray, net: DarknetDNN):
+        """This method is for detecting an object first using DarknetDNN then if the detected object being tracked using ObjectTracker
+        @param:
+         frame: input frame from camera.
+         net: DarknetDNN object for object detection.
+        """
         if not self.tracking_flag:
             self.not_tracking(frame, net)
         else:
