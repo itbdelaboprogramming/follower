@@ -9,23 +9,18 @@ import numpy as np
 import time
 
 import rospy
+from std_msgs.msg import UInt8
 from follower.msg import TargetState
-from geometry_msgs.msg import Twist
 
 # Initialize Camera and Darknet
-camera = DeviceCamera(4)
+camera = DeviceCamera(0)
 net = DarknetDNN()
 tracker = ObjectTracker(4)
 #video = cv2.VideoCapture("C:\\Users\\luthf\\Videos\\Captures\\safety_vest_video.mp4")
 
 # Initialize ROS Node
 rospy.init_node('follow_me_node')
-target_pub = rospy.Publisher('rover_command', TargetState, queue_size=10)
-vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
-
-max_speed = rospy.get_param("~max_speed",1.0) #default is 1 m/s
-max_turn = rospy.get_param("~max_turn",0.8) #default is 0.8 rad/s
-target_dist = rospy.get_param("~distance",2.0) #default is 2 m
+pub = rospy.Publisher('rover_command', TargetState, queue_size=10)
 
 # Time stamp
 start_time = time.time()
@@ -35,14 +30,14 @@ low_hsv = np.array([0, 221, 102], dtype=np.uint8)
 high_hsv = np.array([73, 255, 255], dtype=np.uint8)
 
 net.set_hsv_range(low_hsv, high_hsv)
-net.set_color_threshold(100)
+net.set_color_threshold(0)
 
 while True: #not rospy.is_shutdown():
     # Get frame from camera
     frame, depth = camera.get_frame()
 
     tracker.track_object(frame, net)
-    #print(tracker.get_target_position())
+    print(tracker.get_target_position())
 
     # Publish the command
     """"""
@@ -52,31 +47,22 @@ while True: #not rospy.is_shutdown():
         msg.target_position = 0
 
         position = tracker.get_target_position()
-        distance = tracker.get_target_distance(depth)
-
-        vel = Twist()
-        #vel.linear.x = max(min(0.4*round((target_dist-distance)/10)*10, max_speed), -max_speed) #round the distance error into 10^1 cm order then multiplies it by a proportional factor of 0.4, then constraint it into [-max_speed, max_speed]
+        distance = tracker.get_target_distance()
         
         if position == 'Right':
             msg.target_position = 1
-            vel.angular.z = max_turn
         elif position == 'Left':
             msg.target_position = 2
-            vel.angular.z = -max_turn
         elif position == 'Center':
             msg.target_position = 3
-            vel.angular.z = 0.0
         else:
             msg.target_position = 0
-            vel.linear.x = 0.0
-            vel.angular.z = 0.0
         
         if distance is not None:
             msg.target_distance = distance
 
         rospy.loginfo(msg)
-        target_pub.publish(msg)
-        vel_pub.publish(vel)
+        pub.publish(msg)
 
         start_time = time.time()
     

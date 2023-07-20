@@ -150,4 +150,12 @@ class ObjectTracker(object):
             return None
         else:
             cx, cy = self.get_target_center()
-            return round(depth[cy, cx]/10)
+            distance = depth[cy, cx]/10
+            """
+            try:
+                distance = depth[cy, cx]/10
+            except BaseException as e:
+                print(e)
+                pass
+            """
+            return distance
