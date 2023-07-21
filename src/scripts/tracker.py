@@ -146,10 +146,11 @@ class ObjectTracker(object):
         @param:
          depth: depth image from IntelRealsense in np.ndarray format
         """
-        if depth is None:
+        cx, cy = self.get_target_center()
+        if depth is None or cx is None:
             return None
         else:
-            cx, cy = self.get_target_center()
+            
             distance = depth[cy, cx]/10
             """
             try:
