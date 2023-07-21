@@ -41,7 +41,8 @@ while True: #not rospy.is_shutdown():
     # Get frame from camera
     frame, depth = camera.get_frame()
 
-    tracker.track_object(frame, net)
+    #tracker.track_object(frame, net)
+    tracker.track_object_with_time(frame, net, 5.0)
     #print(tracker.get_target_position())
 
     # Publish the command

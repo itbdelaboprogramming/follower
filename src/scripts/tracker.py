@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import time as tm
 from darknet_yolo import DarknetDNN
 
 class ObjectTracker(object):
@@ -20,6 +21,7 @@ class ObjectTracker(object):
         self.target_bounding_box = None
         self.algorithm = algorithm
         self.tracking_flag = False
+        self.tracking_time = tm.time()
     
     def create(self):
         """
@@ -115,6 +117,28 @@ class ObjectTracker(object):
         """
         if not self.tracking_flag:
             self.not_tracking(frame, net)
+        else:
+            self.tracking(frame)
+        pass
+
+    def track_object_with_time(self, frame: np.ndarray, net: DarknetDNN, duration: float):
+        """This method is for detecting an object first using DarknetDNN then if the detected object being tracked using ObjectTracker
+        @param:
+         frame: input frame from camera.
+         net: DarknetDNN object for object detection.
+         duration: time length before detection algorithm is re executed.
+        """
+        current_time = tm.time()
+        elapsed_time = current_time - self.tracking_time
+
+        if elapsed_time >= duration:
+            self.tracking_flag = False
+            self.tracking_time = current_time
+
+        if not self.tracking_flag:
+            self.not_tracking(frame, net)
+            self.tracking_time = current_time
+            #print(f"{elapsed_time}, detecting")
         else:
             self.tracking(frame)
         pass
