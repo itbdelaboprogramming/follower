@@ -4,5 +4,10 @@
         "/usr/local/lib/python3.8/site-packages",
         "/home/luthfi-hariyadin/catkin_ws/devel/lib/python3/dist-packages"
     ],
-    "ros.distro": "noetic"
+    "ros.distro": "noetic",
+    "python.analysis.extraPaths": [
+        "/opt/ros/noetic/lib/python3/dist-packages",
+        "/usr/local/lib/python3.8/site-packages",
+        "/home/luthfi-hariyadin/catkin_ws/devel/lib/python3/dist-packages"
+    ]
 }

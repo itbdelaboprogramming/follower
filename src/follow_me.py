@@ -35,14 +35,14 @@ low_hsv = np.array([0, 221, 102], dtype=np.uint8)
 high_hsv = np.array([73, 255, 255], dtype=np.uint8)
 
 net.set_hsv_range(low_hsv, high_hsv)
-net.set_color_threshold(100)
+net.set_color_threshold(34)
 
-while True: #not rospy.is_shutdown():
+while not rospy.is_shutdown():
     # Get frame from camera
     frame, depth = camera.get_frame()
 
     #tracker.track_object(frame, net)
-    tracker.track_object_with_time(frame, net, 5.0)
+    tracker.track_object_with_time(frame, net, 10.0)
     #print(tracker.get_target_position())
 
     # Publish the command
@@ -56,8 +56,11 @@ while True: #not rospy.is_shutdown():
         distance = tracker.get_target_distance(depth)
 
         vel = Twist()
-        #vel.linear.x = max(min(0.4*round((target_dist-distance)/10)*10, max_speed), -max_speed) #round the distance error into 10^1 cm order then multiplies it by a proportional factor of 0.4, then constraint it into [-max_speed, max_speed]
-        
+        if distance is not None:
+            vel.linear.x = max(min(0.4*round((target_dist-distance)/10)*10, max_speed), -max_speed) #round the distance error into 10^1 cm order then multiplies it by a proportional factor of 0.4, then constraint it into [-max_speed, max_speed]
+        else:
+            vel.linear.x = 0.0
+
         if position == 'Right':
             msg.target_position = 1
             vel.angular.z = max_turn
