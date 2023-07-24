@@ -2,7 +2,7 @@ import cv2
 import time
 from darknet_yolo import DarknetDNN
 from tracker import ObjectTracker
-from darknet_yolo_2 import DarknetDNN as DN
+
 
 def constrain(val, low, high):
     if val < low:

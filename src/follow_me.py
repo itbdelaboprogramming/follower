@@ -55,6 +55,8 @@ while not rospy.is_shutdown():
         position = tracker.get_target_position()
         distance = tracker.get_target_distance(depth)
 
+        print(tracker.get_target_center(), "->", position)
+
         vel = Twist()
         if distance is not None:
             vel.linear.x = max(min(0.4*round((target_dist-distance)/10)*10, max_speed), -max_speed) #round the distance error into 10^1 cm order then multiplies it by a proportional factor of 0.4, then constraint it into [-max_speed, max_speed]
@@ -78,7 +80,7 @@ while not rospy.is_shutdown():
         if distance is not None:
             msg.target_distance = distance
 
-        rospy.loginfo(msg)
+        rospy.loginfo(msg, tracker.get_target_center(), position)
         target_pub.publish(msg)
         vel_pub.publish(vel)
 

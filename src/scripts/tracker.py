@@ -22,6 +22,8 @@ class ObjectTracker(object):
         self.algorithm = algorithm
         self.tracking_flag = False
         self.tracking_time = tm.time()
+        self.frame_height = None
+        self.frame_width = None
     
     def create(self):
         """
@@ -82,7 +84,7 @@ class ObjectTracker(object):
         net.detect_object(frame, 0)
         net.show_target(frame)
         bbox = net.get_target_box()
-        
+        self.target_bounding_box = None
         if bbox is not None:
             x1, y1, x2, y2 = bbox
             self.target_bounding_box = [x1, y1, x2 - x1, y2 - y1]
@@ -130,6 +132,7 @@ class ObjectTracker(object):
         """
         current_time = tm.time()
         elapsed_time = current_time - self.tracking_time
+        self.frame_height, self.frame_width, _ = frame.shape
 
         if elapsed_time >= duration:
             self.tracking_flag = False
@@ -172,6 +175,10 @@ class ObjectTracker(object):
         """
         cx, cy = self.get_target_center()
         if depth is None or cx is None:
+            return None
+        elif cx > self.frame_width or cx < 0:
+            return None
+        elif cy > self.frame_height or cy < 0:
             return None
         else:
             
