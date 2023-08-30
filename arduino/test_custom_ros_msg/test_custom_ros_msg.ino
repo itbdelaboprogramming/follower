@@ -3,8 +3,40 @@
 #include <std_msgs/String.h>
 #include <std_msgs/Float32.h>
 
+#include <RC_Receiver.h>
+
+// RC is receiver with 4 PWM channel
+#define RC_CH_COUNT 4
+#define RC_CH1      48
+#define RC_CH2      49
+#define RC_CH3      47
+#define RC_CH4      43 // used as failsafe
+
+// MT is motor, used to customize motor parameter
+#define MT_MAX_PWM  100
+
+// ML is motor on the left
+#define ML_EN   7
+#define ML_RPWM 9
+#define ML_LPWM 10
+#define MTL_ACT 13
+
+// MR is motor on the right
+#define MR_EN   8
+#define MR_RPWM 6
+#define MR_LPWM 5
+#define MTR_ACT 4
+
+// LED PIN
+#define RED_LED  30
+#define BLUE_LED 31
+
+// ARMED and DISARMED
+#define ARMED    0x00
+#define DISARMED 0x01
+
 // Uncomment line below to activate publisher to debugging
-//#define DEBUG
+// #define DEBUG
 
 // Define Node Handler
 ros::NodeHandle nh;
@@ -12,6 +44,11 @@ ros::NodeHandle nh;
 // Varible for target position and distaance
 uint16_t target_position_ = 0;
 float target_distance_ = -1;
+
+RC_Receiver receiver(RC_CH1, RC_CH2, RC_CH3, RC_CH4);
+uint16_t pwm_in[RC_CH_COUNT + 1]; // this array starts from 1
+long int pwm_offset[] = {0, 9, 18, 9, 9}; // this array starts from 1
+int16_t  pwm_r = 0, pwm_l = 0, failsafe = DISARMED;
 
 // Callback function that handles data subscribing
 void callback_function( const follower::TargetState& msg){
@@ -55,22 +92,26 @@ uint32_t period = 200;
 
 void rotate_left(){
   // Write down the algorithm so the vehicle rotate left
-
+  pwm_r = 0.6*MT_MAX_PWM;
+  pwm_l = 0.6*MT_MAX_PWM;
 }
 
 void rotate_right(){
   // Write down the algorithm so the vehicle rotate right
-
+  pwm_r = -0.6*MT_MAX_PWM;
+  pwm_l = -0.6*MT_MAX_PWM;
 }
 
 void move_forward(){
   // Write down the algorithm so the vehicle move forward
-
+  pwm_r = -0.6*MT_MAX_PWM;
+  pwm_l = 0.6*MT_MAX_PWM;
 }
 
 void stop(){
   // Write down the algorithm so the vehicle stop moving
-
+  pwm_r = 0;
+  pwm_l = 0;
 }
 
 void setup() {
@@ -84,30 +125,38 @@ void setup() {
   #endif
 
   // Write the rest of setup() code below
+  pinMode(MTL_ACT, OUTPUT);
+  pinMode(ML_EN, OUTPUT);
+  pinMode(ML_RPWM, OUTPUT);
+  pinMode(ML_LPWM, OUTPUT);
+  
+  pinMode(MTR_ACT, OUTPUT);
+  pinMode(MR_EN, OUTPUT);
+  pinMode(MR_RPWM, OUTPUT);
+  pinMode(MR_LPWM, OUTPUT);
+
+  pinMode(RED_LED, OUTPUT);
+  pinMode(BLUE_LED, OUTPUT);
+
+  digitalWrite(MTL_ACT, HIGH);
+  digitalWrite(MTR_ACT, HIGH);
 
 }
 
 void loop() {
   // Write the rest of loop() code below
+  // Get command from RC
+  update_rc();
 
-  
-  
+  // Update failsafe from RC input
+  update_failsafe();
+
+  // Update command from RC input
+  update_cmd();
+
+  // Write to motor
+  write_motor();
   /*=============*/
-
-  // Part to control vehicle heading based on the target position
-  if (target_position_ == 1){
-    rotate_left();
-    msg[0] = 'L';
-  } else if (target_position_ == 2){
-    rotate_right();
-    msg[0] = 'R';
-  } else if (target_position_ == 3){
-    move_forward();
-    msg[0] = 'C';
-  } else {
-    stop();
-    msg[0] = 'H';
-  }
 
   // Only for testing
   if (target_distance_ <= 100){
@@ -115,13 +164,6 @@ void loop() {
   } else {
     msg[1] = 'G';
   }
-
-  /*==============*/
-
-  // Write the rest of loop() code below
-
-
-
 
   /*==============*/
 
@@ -141,3 +183,80 @@ void loop() {
   delay(1);
 }
 
+void update_rc(){
+  for(byte i = 1; i <= 4; i++){
+    pwm_in[i] = receiver.getRaw(i) + pwm_offset[i];
+  }
+}
+
+void update_failsafe(){
+  // It is chosen because if RC is disconnected, the value is 0
+  if(pwm_in[4] > 1500){
+    failsafe = ARMED;
+  }else{
+    failsafe = DISARMED;
+  }
+}
+
+void update_cmd(){
+  if(failsafe == DISARMED){ // Disarmed condition
+    pwm_r = 0;
+    pwm_l = 0;
+    digitalWrite(RED_LED, LOW);
+    digitalWrite(BLUE_LED, LOW);
+  }else{ // Armed condition
+    if(pwm_in[3] < 1600){
+      int16_t cmd_front_back = map(pwm_in[1], 1000, 2000, -MT_MAX_PWM, MT_MAX_PWM);
+      int16_t cmd_right_left = map(pwm_in[2], 1000, 2000, -MT_MAX_PWM, MT_MAX_PWM);
+      pwm_r = cmd_right_left - cmd_front_back;
+      pwm_l = cmd_right_left + cmd_front_back;
+      digitalWrite(RED_LED, LOW);
+      digitalWrite(BLUE_LED, HIGH);
+    }else{
+      // Part to control vehicle heading based on the target position
+      if (target_position_ == 1 && target_distance_ > 150){
+        rotate_left();
+        msg[0] = 'L';
+      } else if (target_position_ == 2){
+        rotate_right();
+        msg[0] = 'R';
+      } else if (target_position_ == 3){
+        move_forward();
+        msg[0] = 'C';
+      } else {
+        stop();
+        msg[0] = 'H';
+      }
+      digitalWrite(RED_LED, HIGH);
+      digitalWrite(BLUE_LED, LOW);
+    }
+  }
+}
+
+void write_motor(){
+  // Rotate right motor
+  if(pwm_r == 0){
+    digitalWrite(MR_EN, LOW);
+  }else if(pwm_r > 0){
+    digitalWrite(MR_EN, HIGH);
+    analogWrite(MR_RPWM, 0);
+    analogWrite(MR_LPWM, pwm_r);
+  }else{
+    digitalWrite(MR_EN, HIGH);
+    analogWrite(MR_LPWM, 0);
+    analogWrite(MR_RPWM, -pwm_r);
+  }
+  
+  // Rotate left motor
+  if(pwm_l == 0){
+    digitalWrite(ML_EN, LOW);
+  }else if(pwm_l > 0){
+    digitalWrite(ML_EN, HIGH);
+    analogWrite(ML_RPWM, 0);
+    analogWrite(ML_LPWM, pwm_l);
+  }else{
+    digitalWrite(ML_EN, HIGH);
+    analogWrite(ML_LPWM, 0);
+    analogWrite(ML_RPWM, -pwm_l);
+  }
+}
