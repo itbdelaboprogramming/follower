@@ -9,6 +9,5 @@
         "/opt/ros/noetic/lib/python3/dist-packages",
         "/usr/local/lib/python3.8/site-packages",
         "/home/luthfi-hariyadin/catkin_ws/devel/lib/python3/dist-packages"
-    ],
-    "cmake.configureOnOpen": false
+    ]
 }
