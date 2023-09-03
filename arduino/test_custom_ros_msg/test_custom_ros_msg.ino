@@ -183,6 +183,7 @@ void loop() {
   delay(1);
 }
 
+// Updates the values of the pwm_in array based on the receiver input and offset values.
 void update_rc(){
   for(byte i = 1; i <= 4; i++){
     pwm_in[i] = receiver.getRaw(i) + pwm_offset[i];
@@ -198,6 +199,15 @@ void update_failsafe(){
   }
 }
 
+/**
+ * Updates the command based on the current state.
+ *
+ * If the failsafe is disarmed, sets the PWM values to 0 and turns off the red and blue LEDs.
+ * Otherwise, if the PWM input value at index 3 is less than 1600, calculates the PWM values for the right and left motors based on the PWM input values at indices 1 and 2.
+ * If the PWM input value at index 3 is greater than or equal to 1600, checks the target position and distance to determine the appropriate action.
+ * - If the target position is 1 and the target distance is greater than 150, rotates left and sets the message to 'L'.
+ * - If the target position is 2
+ */
 void update_cmd(){
   if(failsafe == DISARMED){ // Disarmed condition
     pwm_r = 0;

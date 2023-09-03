@@ -1,5 +1,32 @@
 import cv2
 import numpy as np
+"""
+Device Camera Handling with OpenCV and Intel RealSense Support
+
+This Python script defines a class called `DeviceCamera` for managing camera devices. It provides the flexibility to use both Intel RealSense cameras and regular cameras. The class handles camera initialization, capturing frames, displaying FPS (Frames Per Second), and various camera-related functions.
+
+Initialization:
+- The `DeviceCamera` class initializes a camera device, with the option to use Intel RealSense cameras if the `realsense` flag is set to `True`. Otherwise, it can use any regular camera by specifying a device ID.
+- It also has methods for checking the availability of the Intel RealSense library (`pyrealsense2`) and configuring camera parameters.
+
+RealSense Camera Handling:
+- When using Intel RealSense cameras, the class sets up color and depth streams, aligns them, and reads frames from the camera.
+- It includes functions for displaying the color and depth frames, showing FPS, and visualizing depth data as a heat map.
+
+Regular Camera Handling:
+- When using a regular camera, the class searches for available device IDs and allows you to select one.
+- It handles frame capture and displaying FPS.
+
+User Interaction:
+- The class includes a callback function `click_distance` that provides the depth information (in centimeters) of a point when the user clicks on the frame.
+
+Usage:
+- You can create an instance of the `DeviceCamera` class with optional parameters to specify the camera device or use Intel RealSense.
+- The `main` function demonstrates the use of the class by continuously capturing and displaying frames from the camera.
+- FPS is displayed in real-time, and the program can be exited by pressing 'q' or the 'Esc' key.
+
+Overall, this code serves as a foundation for camera device handling in Python, with support for both Intel RealSense cameras and regular cameras, making it suitable for various computer vision applications.
+"""
 
 class DeviceCamera:
     """
