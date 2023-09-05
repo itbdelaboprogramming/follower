@@ -5,6 +5,62 @@
 
 #include <RC_Receiver.h>
 
+/*
+Real-Time Robot Control with ROS and Remote Control Receiver
+
+Overview:
+This Arduino script enables real-time control of a robot using a Remote Control (RC) receiver. It integrates with ROS (Robot Operating System) for communication and control. The script listens to RC input channels, manages motor control, and responds to target state information from ROS.
+
+Libraries and Constants:
+- The script includes various libraries for ROS communication, RC receiver, and motor control.
+- Constants are defined for RC channels, motor parameters, LEDs, and armed/disarmed states.
+
+ROS Node Initialization:
+- The script initializes a ROS node for communication and subscribes to target state information.
+
+RC Receiver Initialization:
+- The RC receiver is configured with RC channel assignments and PWM offsets.
+- PWM input values are stored in an array for processing.
+
+Callback Function:
+- A callback function handles target state messages received from ROS.
+- Target position and distance are updated based on the received data.
+
+Debugging Publisher (Optional):
+- If the DEBUG macro is defined, ROS publishers for debugging are created.
+- Debugging data, including target position and distance, can be published for monitoring.
+
+Message Format:
+- The script defines a message format to control the robot's behavior.
+- Messages consist of two characters, indicating actions like rotating left (L), rotating right (R), moving forward (G), holding position (H), or stopping (S).
+
+Timing and Periodic Logging:
+- The script tracks timing intervals for periodic logging.
+- Debugging and distance information are logged at specified intervals.
+
+RC Input Handling:
+- The script processes RC input channels and applies PWM offsets.
+- A failsafe mechanism checks for disarmed/armed states based on RC input.
+
+Command Update:
+- Robot commands are updated based on the RC input.
+- If disarmed, PWM values are set to zero, and LEDs are turned off.
+- In the armed state, motor control commands are determined based on RC input and target state information.
+
+Motor Control:
+- Motor control signals are generated for the left and right motors.
+- The script handles forward movement, rotation, and stopping.
+
+Setup:
+- The script initializes ROS, motor pins, LEDs, and other configurations during setup.
+
+Loop:
+- In the main loop, the script continuously processes RC input, updates robot commands, writes motor signals, and logs data for debugging.
+- Target position and distance influence robot behavior.
+
+Overall, this code facilitates real-time robot control through ROS and RC input, making it suitable for remote-controlled robotic applications.
+*/
+
 // RC is receiver with 4 PWM channel
 #define RC_CH_COUNT 4
 #define RC_CH1      48

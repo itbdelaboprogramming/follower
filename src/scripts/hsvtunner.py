@@ -1,6 +1,7 @@
 from __future__ import print_function
 import cv2 as cv
 import argparse
+
 """
 Thresholding Operations using OpenCV and HSV Color Space
 
@@ -34,7 +35,6 @@ User Interaction:
 
 Overall, this code provides a user-friendly interface for experimenting with real-time thresholding operations on a video stream, making it suitable for tasks like object detection and tracking.
 """
-
 
 # Initialize the parameters for thresholding
 max_value = 255

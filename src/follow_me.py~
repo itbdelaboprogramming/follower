@@ -12,6 +12,10 @@ import rospy
 from std_msgs.msg import UInt8
 from follower.msg import TargetState
 
+"""
+Backup file, ignore this file, just only for educational purpose
+"""
+
 # Initialize Camera and Darknet
 camera = DeviceCamera(0)
 net = DarknetDNN()
