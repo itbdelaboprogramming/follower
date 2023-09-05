@@ -30,9 +30,9 @@ After installing `rosserial` for our machine, we installed `rosserial` arduino l
 
 ### Setup the ROS Package
 
-1. Go to your local ROS workspace
+1. Go to your local ROS workspace. For example:
 ``` bash
-cd catkin_ws/src
+cd ~/catkin_ws/src
 ```
 2. Clone the repository
 ``` bash
