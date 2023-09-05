@@ -1,4 +1,4 @@
-/**
+/*
 The 'settings.json' file contains configuration settings for a Python development environment, particularly in the context of working with ROS (Robot Operating System) and Python.
 
 Here's what each of the settings means:
@@ -16,7 +16,7 @@ ros.distro: This setting specifies the ROS distribution you are using. In this c
 python.analysis.extraPaths: This setting is similar to python.autoComplete.extraPaths but is specific to Python code analysis tools, such as linters and static analyzers. It tells these tools where to find Python packages and modules for analysis. The paths specified here are the same as in python.autoComplete.extraPaths.
 
 These settings are essential for a smooth development experience when working on ROS projects in Python. They ensure that your code editor can provide auto-completion suggestions, code analysis, and other features based on the Python packages and modules you are using, including those provided by ROS and any custom packages you've developed within your ROS workspace.
-**/
+*/
 
 {
     "python.autoComplete.extraPaths": [
