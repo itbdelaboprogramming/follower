@@ -1,3 +1,5 @@
+#include <Servo.h>
+
 #include <ros.h>
 #include <follower/TargetState.h>
 #include <std_msgs/String.h>
@@ -6,14 +8,15 @@
 #include <RC_Receiver.h>
 
 // RC is receiver with 4 PWM channel
-#define RC_CH_COUNT 4
+#define RC_CH_COUNT 5
 #define RC_CH1      48
 #define RC_CH2      49
 #define RC_CH3      47
 #define RC_CH4      43 // used as failsafe
+#define RC_CH5      42
 
 // MT is motor, used to customize motor parameter
-#define MT_MAX_PWM  100
+#define MT_MAX_PWM  150
 
 // ML is motor on the left
 #define ML_EN   7
@@ -31,6 +34,9 @@
 #define RED_LED  30
 #define BLUE_LED 31
 
+// SERVO
+#define CAM_SERVO 2
+
 // ARMED and DISARMED
 #define ARMED    0x00
 #define DISARMED 0x01
@@ -41,13 +47,16 @@
 // Define Node Handler
 ros::NodeHandle nh;
 
+Servo camServo;
+int servo_pos = 150;
+
 // Varible for target position and distaance
 uint16_t target_position_ = 0;
 float target_distance_ = -1;
 
-RC_Receiver receiver(RC_CH1, RC_CH2, RC_CH3, RC_CH4);
+RC_Receiver receiver(RC_CH1, RC_CH2, RC_CH3, RC_CH4, RC_CH5);
 uint16_t pwm_in[RC_CH_COUNT + 1]; // this array starts from 1
-long int pwm_offset[] = {0, 9, 18, 9, 9}; // this array starts from 1
+long int pwm_offset[] = {0, 9, 18, 9, 9, 9}; // this array starts from 1
 int16_t  pwm_r = 0, pwm_l = 0, failsafe = DISARMED;
 
 // Callback function that handles data subscribing
@@ -141,6 +150,7 @@ void setup() {
   digitalWrite(MTL_ACT, HIGH);
   digitalWrite(MTR_ACT, HIGH);
 
+  camServo.attach(CAM_SERVO);
 }
 
 void loop() {
@@ -184,7 +194,7 @@ void loop() {
 }
 
 void update_rc(){
-  for(byte i = 1; i <= 4; i++){
+  for(byte i = 1; i <= 5; i++){
     pwm_in[i] = receiver.getRaw(i) + pwm_offset[i];
   }
 }
@@ -212,15 +222,15 @@ void update_cmd(){
       pwm_l = cmd_right_left + cmd_front_back;
       digitalWrite(RED_LED, LOW);
       digitalWrite(BLUE_LED, HIGH);
-    }else{
+    } else {
       // Part to control vehicle heading based on the target position
-      if (target_position_ == 1 && target_distance_ > 150){
+      if (target_position_ == 1){
         rotate_left();
         msg[0] = 'L';
       } else if (target_position_ == 2){
         rotate_right();
         msg[0] = 'R';
-      } else if (target_position_ == 3){
+      } else if (target_position_ == 3 && target_distance_ > 150){
         move_forward();
         msg[0] = 'C';
       } else {
@@ -230,6 +240,21 @@ void update_cmd(){
       digitalWrite(RED_LED, HIGH);
       digitalWrite(BLUE_LED, LOW);
     }
+    // Write to motor
+    write_servo();
+  }
+}
+
+void write_servo(){
+  if (pwm_in[5] >= 980 && pwm_in[5] <= 2020){
+    servo_pos = map(pwm_in[5], 980, 2020, 135, 170);
+    camServo.write(servo_pos);
+  } else if (pwm_in[5] > 2020) {
+    servo_pos = 175;
+    camServo.write(servo_pos);
+  } else {
+    servo_pos = 150;
+    camServo.write(servo_pos);
   }
 }
 
