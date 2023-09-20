@@ -3,7 +3,7 @@ import cv2 as cv
 import argparse
 
 """
-Thresholding Operations using OpenCV and HSV Color Space
+Thresholding Operations using OpenCV and HSV Color Space, with this script you can tune the HVS so it will filter the color you want to detect. Make sure save the setting tune (low HSV and high HSV) to apply it in the main program (follow_me.py)
 
 Overview:
 This Python script performs thresholding operations on a video stream using OpenCV. It allows the user to interactively adjust the thresholding parameters through trackbars in real-time, making it useful for various computer vision applications.

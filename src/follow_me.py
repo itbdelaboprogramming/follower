@@ -63,9 +63,12 @@ tracker = ObjectTracker(4)
 
 # Initialize ROS Node
 rospy.init_node('follow_me_node')
+
+# Create ROS Publishers
 target_pub = rospy.Publisher('rover_command', TargetState, queue_size=10)
 vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
 
+# Define Parameters
 max_speed = rospy.get_param("~max_speed",1.0) #default is 1 m/s
 max_turn = rospy.get_param("~max_turn",0.8) #default is 0.8 rad/s
 target_dist = rospy.get_param("~distance",2.0) #default is 2 m
