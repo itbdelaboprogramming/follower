@@ -16,7 +16,7 @@
 #define RC_CH5      42
 
 // MT is motor, used to customize motor parameter
-#define MT_MAX_PWM  150
+#define MT_MAX_PWM  200
 
 // ML is motor on the left
 #define ML_EN   7
@@ -36,6 +36,9 @@
 
 // SERVO
 #define CAM_SERVO 2
+
+//DISTANCE TO MAINTAIN
+#define DISTANCE 200
 
 // ARMED and DISARMED
 #define ARMED    0x00
@@ -101,20 +104,20 @@ uint32_t period = 200;
 
 void rotate_left(){
   // Write down the algorithm so the vehicle rotate left
-  pwm_r = 0.6*MT_MAX_PWM;
-  pwm_l = 0.6*MT_MAX_PWM;
+  pwm_r = 1.0*MT_MAX_PWM;
+  pwm_l = 1.0*MT_MAX_PWM;
 }
 
 void rotate_right(){
   // Write down the algorithm so the vehicle rotate right
-  pwm_r = -0.6*MT_MAX_PWM;
-  pwm_l = -0.6*MT_MAX_PWM;
+  pwm_r = -1.0*MT_MAX_PWM;
+  pwm_l = -1.0*MT_MAX_PWM;
 }
 
 void move_forward(){
   // Write down the algorithm so the vehicle move forward
-  pwm_r = -0.6*MT_MAX_PWM;
-  pwm_l = 0.6*MT_MAX_PWM;
+  pwm_r = -1.0*MT_MAX_PWM;
+  pwm_l = 1.0*MT_MAX_PWM;
 }
 
 void stop(){
@@ -230,7 +233,7 @@ void update_cmd(){
       } else if (target_position_ == 2){
         rotate_right();
         msg[0] = 'R';
-      } else if (target_position_ == 3 && target_distance_ > 150){
+      } else if (target_position_ == 3 && target_distance_ > DISTANCE){
         move_forward();
         msg[0] = 'C';
       } else {
