@@ -73,8 +73,8 @@ Launch the node by run this command in terminal
 roslaunch follower follower.launch
 ```
 
-# Read more
-### This program uses Python's OOP concepts with the main Program is `follow_me.py`
+# Important! Read more!
+### This follower program uses Python's OOP concepts with the main Program is `follow_me.py`
 
 #### - The main program will import Class `DeviceCamera` from :
 ```bash
@@ -87,6 +87,7 @@ When initialize the class `DeviceCamera()` is better to define the id device for
 ~/scripts/tracker.py
 ```
 Using the `ObjectTracker` class you can choose from the available tracking methods. There are 7 tracker algorithms that can be used, which are:
+```bash
     1. Boosting
     2. CSRT
     3. KCF
@@ -94,6 +95,7 @@ Using the `ObjectTracker` class you can choose from the available tracking metho
     5. MIL
     6. MOSSE
     7. TLD
+```
 
 You need to define which algorithm you will use base on their number when initialize this class in the main program (`follow_me.py`), for example `tracker = ObjectTracker(4)`. We already try algorithm number 4 and it goes well so far. There will be update for other algorithm info in the future.
 
@@ -118,12 +120,13 @@ for example if the camera device number is 4
 ```bash
 python hsvtunner.py --camera 4
 ```
-if the program run perfectly you will see 2 different camera views. One is the normal camera, and the other is the HSV filtered view result. You can adjust value for lower limit and upper limit of the hsv value until the collor that you want will be displayed by the filter camera in white while other colors will be black.
+if the program run perfectly you will see 2 different camera views. One is the normal camera, and the other is the HSV filtered view result.
 
 |            Normal Camera             |              HSV Filter              |
 |:------------------------------------:|:------------------------------------:|
 | ![Success](./hsv_result/Normal.png)  |![Success](./hsv_result/HSVFilter.png)|
 
+You can adjust value for lower limit and upper limit of the hsv value until the collor that you want will be displayed by the filter camera in white while other colors will be black. Note the value of the minimum value and maximum vale of hsv, then input the value to the `low_hsv` and `high_hsv` variable at `follow_me.py`.
 
 # ROS Nodes For the main program (`follow_me.py`)
 
