@@ -78,13 +78,13 @@ roslaunch follower follower.launch
 
 #### - The main program will import Class `DeviceCamera` from :
 ```bash
-~/scripts/device_camera.py
+~/follower/src/scripts/device_camera.py
 ```
 When initialize the class `DeviceCamera()` is better to define the id device for the camera, for example `DeviceCamera(4)`. If you are using other cameras besides realsense, you need to redifine the class to false, for example `DeviceCamera(4, False)`.
 
 #### - import Class `ObjectTracker` from :
 ```bash
-~/scripts/tracker.py
+~/follower/src/scripts/tracker.py
 ```
 Using the `ObjectTracker` class you can choose from the available tracking methods. There are 7 tracker algorithms that can be used, which are:
 ```bash
@@ -101,14 +101,14 @@ You need to define which algorithm you will use base on their number when initia
 
 #### - import Class `DarknetDNN` from :
 ```bash
-~/scripts/darknet_yolo.py
+~/follower/src/scripts/darknet_yolo.py
 ```
 `DarknetDNN` designed for performing object detection using the Darknet framework and OpenCV. It's a versatile tool for identifying objects in a video stream, with a focus on customizable configurations and real-time feedback.
 
 In the main program (`follow_me.py`) class `DarknetDNN` is define by `net` variable. It will call `set_hsv_range(low_hsv, high_hsv)` and `set_color_threshold(value)` function. You can customize the hsv range with `set_hsv_range(low_hsv, high_hsv)` function. To set the minimum color confidence required for an object to be considered relevant, you can set parameter `value` in `set_color_threshold`. Objects with color confidence below this threshold will not be included in the final result.
 
 #### - `hsvtunner.py` is a program to calibrate the lower and upper limit values of hsv.
-you can run this program to find out the lower limit and upper limit of the hsv value of a color that you want. Type this code in your terminal:
+you can run this program to find out the lower limit and upper limit of the hsv value of a specific color that you want. Type this code in your terminal:
 ```bash
 cd ~/follower/src/scripts
 ```
@@ -127,6 +127,16 @@ if the program run perfectly you will see 2 different camera views. One is the n
 | ![Success](./hsv_result/Normal.png)  |![Success](./hsv_result/HSVFilter.png)|
 
 You can adjust value for lower limit and upper limit of the hsv value until the collor that you want will be displayed by the filter camera in white while other colors will be black. Note the value of the minimum value and maximum vale of hsv, then input the value to the `low_hsv` and `high_hsv` variable at `follow_me.py`.
+```bash
+low_hsv = np.array(['low_H', 'low_S', 'low_V'], dtype=np.uint8)
+high_hsv = np.array(['High_H', 'High_S', 'High_V'], dtype=np.uint8)
+```
+for example if the value of low H = 0, S = 221, V = 102 and the value of high H = 73, S = 255, V = 255 then
+```bash
+low_hsv = np.array([0, 221, 102], dtype=np.uint8)
+high_hsv = np.array([73, 255, 255], dtype=np.uint8)
+```
+you also can search the limit of low and high hsv for your color in google.
 
 # ROS Nodes For the main program (`follow_me.py`)
 
