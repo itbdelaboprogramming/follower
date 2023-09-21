@@ -3,19 +3,80 @@ import numpy as np
 import time as tm
 from darknet_yolo import DarknetDNN
 
+"""
+Real-Time Object Tracking with ObjectTracker and DarknetDNN
+
+Overview:
+This Python script demonstrates real-time object tracking by integrating the "ObjectTracker" module for object tracking and the "DarknetDNN" module for YOLO (You Only Look Once) object detection. It enables the detection and tracking of objects within a video stream from a camera.
+
+Libraries:
+- The script imports necessary libraries, including OpenCV for video processing and NumPy for array operations.
+- Custom modules "ObjectTracker" and "DarknetDNN" are utilized for object tracking and YOLO detection, respectively.
+
+Utility Function:
+- A utility function "constrain" is defined to limit a value within a specified range.
+
+Initialization:
+- The YOLO object detection model is initialized using "DarknetDNN."
+- A video capture object ("cap") is created to capture video from the default camera (camera ID 0).
+- An instance of the "ObjectTracker" class is initialized for object tracking.
+- Variables for bounding box ("bbox"), tracking state ("tracking"), frame count, and start time are initialized.
+
+Secondary YOLO Model:
+- A secondary YOLO model ("net2") is mentioned with various configuration settings. Details about its purpose and configuration are provided in the code comments.
+
+Main Loop:
+- The script enters a continuous loop for processing video frames.
+- Each iteration reads a frame from the camera using "cap.read()" and increments the frame count.
+
+Object Tracking:
+- If object tracking is enabled ("tracking" is True):
+  - The script attempts to detect and hunt for an object using the YOLO model ("net").
+  - Detected objects are highlighted with bounding boxes.
+  - Bounding box coordinates are extracted and constrained to fit within the frame.
+  - The target for tracking is set using the "ObjectTracker."
+
+Object Tracking Update:
+- If tracking is in progress:
+  - The tracker is updated with the current frame.
+  - If the update is successful, a rectangle is drawn around the tracked object.
+
+FPS Calculation:
+- Frames Per Second (FPS) is calculated and displayed to monitor real-time video processing performance.
+
+User Interaction:
+- The processed frame with object tracking is displayed in a window named "Object."
+- The program can be exited gracefully by pressing 'q' or the 'Esc' key.
+
+Cleanup:
+- After exiting the loop, the video capture object ("cap") is released.
+- All OpenCV windows are closed to free up system resources.
+
+Note:
+- The script mentions the creation of a secondary YOLO model ("net2") with additional configurations. While this code provides the structure, specific details about "net2" are not included, and further information can be found in the relevant code comments.
+
+Overall, this code exemplifies the implementation of real-time object tracking by combining YOLO detection with OpenCV's tracking capabilities.
+"""
+
+
 class ObjectTracker(object):
     def __init__(self, algorithm: int = 0):
         """
-        The algorithm list are:
-        1: Boosting
-        2: CSRT
-        3: KCF
-        4: Median Flow
-        5: MIL
-        6: MOSSE
-        7: TLD
+        Initialize an object tracker with various tracking algorithms.
 
-        Other value and 0 will erase the tracker object.
+        Args:
+            algorithm (int): The tracking algorithm to use (0 to erase, 1 to 7 for specific algorithms).
+
+        Algorithm List:
+            1: Boosting
+            2: CSRT
+            3: KCF
+            4: Median Flow
+            5: MIL
+            6: MOSSE
+            7: TLD
+
+        Other values and 0 will erase the tracker object.
         """
         self.tracker = None
         self.target_bounding_box = None
@@ -27,7 +88,7 @@ class ObjectTracker(object):
     
     def create(self):
         """
-        Method to create an object tracker from OpenCV library.
+        Create an object tracker from the OpenCV library based on the selected algorithm.
         """
         if self.algorithm == 0:
             self.tracker = None

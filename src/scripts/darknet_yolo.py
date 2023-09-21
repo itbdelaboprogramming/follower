@@ -2,7 +2,44 @@ import os
 import cv2
 import numpy as np
 
+"""
+Object Detection with DarknetDNN
+
+This Python script defines a class called `DarknetDNN`, designed for performing object detection using the Darknet framework and OpenCV. It's a versatile tool for identifying objects in a video stream, with a focus on customizable configurations and real-time feedback.
+
+Initialization:
+- The `DarknetDNN` class is initialized with optional parameters for the YOLOv3-tiny model: `dnn_model` for the weights file and `dnn_config` for the configuration file.
+- It allows setting various thresholds for object detection confidence, color filtering, and HSV color range for specific object tracking.
+
+Real-time Object Detection:
+- The class provides a method `detect_object` to perform real-time object detection on video frames.
+- You can specify a target object by providing its index (e.g., "Person" with id 0), and it will focus on detecting that object.
+
+Color Filtering:
+- It's possible to set a color threshold and HSV color range to filter objects based on color.
+- The code calculates color confidences for detected objects, which can be used to identify the most relevant target.
+
+Target Information:
+- The class keeps track of the most relevant target based on color confidence.
+- You can retrieve information about the target, including its bounding box, class, confidence, color confidence, position (left, center, or right in the frame), and distance from a depth image (assuming Intel RealSense depth data is available).
+
+Real-time Video Stream:
+- The `main` function demonstrates the use of the `DarknetDNN` class by capturing frames from the default camera (or a video stream) and continuously displaying information about the detected target.
+- It also prints the target's position, color confidence, and distance in real-time.
+
+Usage:
+- To use this script for your own object detection tasks, you can create an instance of the `DarknetDNN` class and customize its parameters as needed.
+- You can integrate this code with a video stream, such as a webcam, to perform real-time object detection and tracking with customizable thresholds.
+
+Exiting the Program:
+- The program can be exited by pressing the 'Esc' key.
+
+Overall, this code serves as a foundation for building applications that require real-time object detection, target tracking, and color-based filtering using YOLOv3-tiny and OpenCV.
+"""
+
+
 ROOT_DIR = os.path.dirname(__file__)
+
 
 class DarknetDNN:
     def __init__(self, dnn_model = "weights/yolov3-tiny.weights", dnn_config = "cfg/yolov3-tiny.cfg"):
