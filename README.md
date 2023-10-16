@@ -64,7 +64,7 @@ rosrun rosserial_arduino make_libraries.py .
 ```
 4. Go back to the `follower` directory and go to the Arduino folder.
 ``` bash
-cd ~/catkin_ws/src/follower/Arduino/test_custom_ros_msg
+cd ~/catkin_ws/src/follower/arduino/test_custom_ros_msg
 ```
 5. Open the Arduino sketch with Arduino IDE and upload it to your board.
 ``` bash
