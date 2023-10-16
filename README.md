@@ -38,8 +38,10 @@ cd ~/catkin_ws/src
 ``` bash
 git clone https://github.com/itbdelaboprogramming/follower.git
 ```
-3. Go to cd ~/catkin_ws
-
+3. Go to
+```bash
+cd ~/catkin_ws
+```
 4. Make the ROS workspace, type `catkin_make` into the terminal and run it.
 ``` bash
 catkin_make
