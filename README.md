@@ -107,7 +107,7 @@ sudo apt-get update
 sudo apt-get upgrade
 ```
 
-## 5. Uninstalling the Packages
+## 5. Uninstalling the Packages (if the installation goes wrong)
 Removing Debian package is allowed only when no other installed packages directly refer to it. For example removing ```librealsense2-udev-rules``` requires ```librealsense2``` to be removed first.
 
 Remove a single package with:
