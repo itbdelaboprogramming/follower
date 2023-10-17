@@ -107,7 +107,17 @@ sudo apt-get update
 sudo apt-get upgrade
 ```
 
-## 5. Run the Package
+## 5. Uninstalling the Packages
+Removing Debian package is allowed only when no other installed packages directly refer to it. For example removing ```librealsense2-udev-rules``` requires ```librealsense2``` to be removed first.
+
+Remove a single package with:
+```sudo apt-get purge <package-name>```
+
+Remove all RealSense™ SDK-related packages with:
+```dpkg -l | grep "realsense" | cut -d " " -f 3 | xargs sudo dpkg --purge```
+The details can be found here: https://github.com/IntelRealSense/librealsense/blob/master/doc/distribution_linux.md
+
+## 6. Run the Package
 Launch the node by run this command in terminal
 ``` bash
 roslaunch follower follower.launch
