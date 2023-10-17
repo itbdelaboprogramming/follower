@@ -115,6 +115,7 @@ Remove a single package with:
 
 Remove all RealSense™ SDK-related packages with:
 ```dpkg -l | grep "realsense" | cut -d " " -f 3 | xargs sudo dpkg --purge```
+
 The details can be found here: https://github.com/IntelRealSense/librealsense/blob/master/doc/distribution_linux.md
 
 ## 6. Run the Package
