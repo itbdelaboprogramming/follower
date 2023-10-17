@@ -130,15 +130,15 @@ git checkout `git tag | sort -V | grep -P "^2.\d+\.\d+" | tail -1`
 cd ..
 ```
 3. If there's an error related to the *ddynamic_reconfigure* package not being found, resolve this issue by following the steps below.
-Source the ROS environment
+3.1 Source the ROS environment
 ```bash
 source /opt/ros/noetic/setup.bash
 ```
-Install the missing *ddyanmic_reconfigure* package
+3.2 Install the missing *ddyanmic_reconfigure* package
 ```bash
 sudo apt-get install ros-noetic-ddynamic-reconfigure
 ```
-Once the package is installed, do catkin_make
+3.3 Once the package is installed, do catkin_make
 ```bash
 cd ~/catkin_ws/src/
 catkin_make
