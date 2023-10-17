@@ -71,7 +71,43 @@ cd ~/catkin_ws/src/follower/arduino/test_custom_ros_msg
 arduino test_custom_ros_msg
 ```
 
-## 3. Run the Package
+## 3. Install the Intel RealSense SDK 2.0 Packages
+
+1. Register the server's public key
+``` bash
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE || sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE
+````
+2. Add the server to the list of repositories
+```bash
+sudo add-apt-repository "deb https://librealsense.intel.com/Debian/apt-repo $(lsb_release -cs) main" -u
+```
+3. Install the SDK libraries
+```bash
+sudo apt-get install librealsense2-dkms
+sudo apt-get install librealsense2-dev
+```
+The above two lines will deploy librealsense2 udev rules, build and activate kernel modules, runtime library and executable demos and tools.
+4. Install the developer and debug packages
+```bash
+sudo apt-get install librealsense2-dev
+sudo apt-get install librealsense2-dbg
+```
+5. Reconnect the Intel RealSense device (D435i) and run the command below to verify the installation
+```bash
+realsense-viewer
+```
+
+## 4. Upgrading the Packages
+1. Refresh the local package cache
+```bash
+sudo apt-get update
+```
+2. Upgrade all the installed packages, including ```librealsense```
+```bash
+sudo apt-get upgrade
+```
+
+## 5. Run the Package
 Launch the node by run this command in terminal
 ``` bash
 roslaunch follower follower.launch
