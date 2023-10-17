@@ -71,7 +71,7 @@ cd ~/catkin_ws/src/follower/arduino/test_custom_ros_msg
 arduino test_custom_ros_msg
 ```
 
-## 3. Install the Intel RealSense SDK 2.0 Packages
+## 3. Install the Intel RealSense SDK 2.0
 
 1. Register the server's public key
 ``` bash
@@ -96,6 +96,16 @@ sudo apt-get install librealsense2-dbg
 ```bash
 realsense-viewer
 ```
+## 3.1. Uninstalling the Packages (if the installation goes wrong)
+Removing Debian package is allowed only when no other installed packages directly refer to it. For example removing ```librealsense2-udev-rules``` requires ```librealsense2``` to be removed first.
+
+Remove a single package with:
+```sudo apt-get purge <package-name>```
+
+Remove all RealSense™ SDK-related packages with:
+```dpkg -l | grep "realsense" | cut -d " " -f 3 | xargs sudo dpkg --purge```
+
+The details can be found here: https://github.com/IntelRealSense/librealsense/blob/master/doc/distribution_linux.md
 
 ## 4. Upgrading the Packages
 1. Refresh the local package cache
@@ -107,16 +117,32 @@ sudo apt-get update
 sudo apt-get upgrade
 ```
 
-## 5. Uninstalling the Packages (if the installation goes wrong)
-Removing Debian package is allowed only when no other installed packages directly refer to it. For example removing ```librealsense2-udev-rules``` requires ```librealsense2``` to be removed first.
-
-Remove a single package with:
-```sudo apt-get purge <package-name>```
-
-Remove all RealSense™ SDK-related packages with:
-```dpkg -l | grep "realsense" | cut -d " " -f 3 | xargs sudo dpkg --purge```
-
-The details can be found here: https://github.com/IntelRealSense/librealsense/blob/master/doc/distribution_linux.md
+## 5. Install the Intel RealSense ROS from Sources
+1. Go to the catkin workspace in Ubuntu
+```bash
+cd ~/catkin_ws/src/
+```
+2. Clone the latest Intel RealSense ROS
+```bash
+git clone https://github.com/IntelRealSense/realsense-ros.git
+cd realsense-ros/
+git checkout `git tag | sort -V | grep -P "^2.\d+\.\d+" | tail -1`
+cd ..
+```
+3. If there's an error related to the *ddynamic_reconfigure* package not being found, resolve this issue by following the steps below.
+Source the ROS environment
+```bash
+source /opt/ros/noetic/setup.bash
+```
+Install the missing *ddyanmic_reconfigure* package
+```bash
+sudo apt-get install ros-noetic-ddynamic-reconfigure
+```
+Once the package is installed, do catkin_make
+```bash
+cd ~/catkin_ws/src/
+catkin_make
+```
 
 ## 6. Run the Package
 Launch the node by run this command in terminal
