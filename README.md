@@ -145,7 +145,98 @@ cd ~/catkin_ws/src/
 catkin_make
 ```
 
-## 6. Run the Package
+## 6. Install the OpenCV 4.2.0
+
+1. Install essential dependencies
+```bash
+sudo apt-get install build-essential cmake pkg-config libjpeg-dev libtiff5-dev libpng-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libxvidcore-dev libx264-dev libgtk2.0-dev libgtk-3-dev libatlas-base-dev gfortran
+```
+2. Install additional libraries
+```bash
+sudo apt install libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libdc1394-22-dev
+```
+3. Install Python development packages
+```bash
+sudo apt install python3-dev python3-numpy
+```
+4. Clone the OpenCV repository and checkout version 4.2.0
+```bash
+cd ~  # Go to your home directory or any preferred directory
+wget -O opencv-4.2.0.zip https://github.com/opencv/opencv/archive/4.2.0.zip
+unzip opencv-4.2.0.zip
+```
+Download the OpenCV contrib (optional) for OpenCV extra modules
+```bash
+wget -O opencv_contrib-4.2.0.zip https://github.com/opencv/opencv_contrib/archive/4.2.0.zip
+unzip opencv_contrib-4.2.0.zip
+```
+5. Create a build directoty and navigate to it
+```bash
+cd ~/opencv-4.2.0
+mkdir build
+cd build
+```
+6. Configure the build using CMake
+This step is needed to configure the build with the desired options. It's customizable and the option works depending on the local setup.
+```bash
+cmake -D CMAKE_BUILD_TYPE=RELEASE \
+      -D CMAKE_INSTALL_PREFIX=/usr/local \
+      -D INSTALL_PYTHON_EXAMPLES=ON \
+      -D INSTALL_C_EXAMPLES=OFF \
+      -D OPENCV_ENABLE_NONFREE=ON \
+      -D WITH_TBB=ON \
+      -D WITH_V4L=ON \
+      -D WITH_QT=ON \
+      -D WITH_OPENGL=ON \
+      -D OPENCV_EXTRA_MODULES_PATH=../opencv_contrib/modules ..
+```
+If the build requires Qt5, install Qt5 development packages.
+```bash
+sudo apt-get install qt5-default
+sudo apt-get install libegl1-mesa-dev
+```
+If there's an error regarding the Qt5, disable the Qt components
+```bash
+cmake -D CMAKE_BUILD_TYPE=RELEASE \
+       -D CMAKE_INSTALL_PREFIX=/usr/local \
+       -D INSTALL_PYTHON_EXAMPLES=ON \
+       -D INSTALL_C_EXAMPLES=OFF \
+       -D OPENCV_ENABLE_NONFREE=ON \
+       -D WITH_TBB=ON \
+       -D WITH_V4L=ON \
+       -D WITH_OPENGL=ON \
+       -D WITH_QT=OFF \
+       -D WITH_GTK=OFF \
+       -D WITH_JASPER=OFF \
+       -D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib-4.2.0/modules ..
+```
+7. Build OpenCV.
+Adjust the -j flag to specify the number of CPU cores to use during the build process. Use the number of CPU cores available on the system.
+Check the number of CPU cores available using the command below.
+```bash
+nproc
+```
+Build process
+```bash
+make -j8
+```
+8. Install OpenCV
+```bash
+sudo make install
+```
+9. Configure the library links
+OpenCV 4.2.0 should now be installed in the Ubuntu system after this step.
+```bash
+sudo ldconfig
+```
+????????
+
+10. Verify the installation
+```bash
+pkg-config --modversion opencv
+```
+
+## 7. Run the Package
 Launch the node by run this command in terminal
 ``` bash
 roslaunch follower follower.launch
