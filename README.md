@@ -229,11 +229,10 @@ OpenCV 4.2.0 should now be installed in the Ubuntu system after this step.
 ```bash
 sudo ldconfig
 ```
-????????
 
 10. Verify the installation
 ```bash
-pkg-config --modversion opencv
+python3 -c "import cv2; print(cv2.__version__)"
 ```
 
 ## 7. Run the Package
