@@ -144,8 +144,18 @@ sudo apt-get install ros-noetic-ddynamic-reconfigure
 cd ~/catkin_ws/src/
 catkin_make
 ```
+## 6.1 Install the OpenCV 4.2.0.32 (Directly from Python)
 
-## 6. Install the OpenCV 4.2.0
+1. Install the OpenCV
+```bash
+pip3 install opencv-python==4.2.0.32
+```
+2. Install the OpenCV-contrib
+```bash
+pip3 install opencv-contrib-python==4.2.0.32
+```
+
+## 6.2 Install the OpenCV 4.2.0 (Build from Source)
 
 1. Install essential dependencies
 ```bash
@@ -234,6 +244,9 @@ sudo ldconfig
 ```bash
 python3 -c "import cv2; print(cv2.__version__)"
 ```
+
+11. Configure the OpenCV-contrib file
+Each environment has different way.... tbc..
 
 ## 7. Run the Package
 Launch the node by run this command in terminal
