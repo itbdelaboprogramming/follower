@@ -247,7 +247,7 @@ sudo ldconfig
 python3 -c "import cv2; print(cv2.__version__)"
 ```
 
-## OpenCV 4.2.0.32 (Tracking Algorithm: DaSiamRPN, CSRT, KCF, GOTURN, MIL, Nano)
+## OpenCV 4.8.1 (Tracking Algorithm: DaSiamRPN, CSRT, KCF, GOTURN, MIL, Nano)
 
 ## 6.1 Install the OpenCV 4.8.1 (Directly from Python) | the latest version is 4.8.1 per 2023/10/25 
 
