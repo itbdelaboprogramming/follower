@@ -144,6 +144,9 @@ sudo apt-get install ros-noetic-ddynamic-reconfigure
 cd ~/catkin_ws/src/
 catkin_make
 ```
+
+## OpenCV 4.2.0.32 (Tracking Algorithm: Boosting, CSRT, KCF, MedianFlow, MIL, MOSSE, TLD)
+
 ## 6.1 Install the OpenCV 4.2.0.32 (Directly from Python)
 
 1. Install the OpenCV
@@ -239,14 +242,23 @@ OpenCV 4.2.0 should now be installed in the Ubuntu system after this step.
 ```bash
 sudo ldconfig
 ```
-
 10. Verify the installation
 ```bash
 python3 -c "import cv2; print(cv2.__version__)"
 ```
 
-11. Configure the OpenCV-contrib file
-Each environment has different way.... tbc..
+## OpenCV 4.2.0.32 (Tracking Algorithm: DaSiamRPN, CSRT, KCF, GOTURN, MIL, Nano)
+
+## 6.1 Install the OpenCV 4.8.1 (Directly from Python) | the latest version is 4.8.1 per 2023/10/25 
+
+1. Install the OpenCV
+```bash
+pip3 install opencv-python
+```
+2. Install the OpenCV-contrib
+```bash
+pip3 install opencv-contrib-python
+```
 
 ## 7. Run the Package
 Launch the node by run this command in terminal
