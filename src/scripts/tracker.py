@@ -90,25 +90,55 @@ class ObjectTracker(object):
         """
         Create an object tracker from the OpenCV library based on the selected algorithm.
         """
+
+        # 4.8.1
         if self.algorithm == 0:
             self.tracker = None
         elif self.algorithm == 1:
-            self.tracker = cv2.legacy.TrackerBoosting_create()
+            self.tracker = cv2.TrackerDaSiamRPN_create()
         elif self.algorithm == 2:
-            self.tracker = cv2.legacy.TrackerCSRT_create()
+            self.tracker = cv2.TrackerCSRT_create()
         elif self.algorithm == 3:
-            self.tracker = cv2.legacy.TrackerKCF_create()
+            self.tracker = cv2.TrackerKCF_create()
         elif self.algorithm == 4:
-            self.tracker = cv2.legacy.TrackerMedianFlow_create()
+            self.tracker = cv2.TrackerGOTURN_create()
         elif self.algorithm == 5:
-            self.tracker = cv2.legacy.TrackerMIL_create()
+            self.tracker = cv2.TrackerMIL_create()
         elif self.algorithm == 6:
-            self.tracker = cv2.legacy.TrackerMOSSE_create()
-        elif self.algorithm == 7:
-            self.tracker = cv2.legacy.TrackerTLD_create()
+            self.tracker = cv2.TrackerNano_create()
         else:
             self.tracker = None
-    
+
+        """
+        # 4.2.0.32
+        if self.algorithm == 0:
+            self.tracker = None
+        elif self.algorithm == 1:
+            #self.tracker = cv2.legacy.TrackerBoosting_create()
+            self.tracker = cv2.TrackerBoosting_create()
+        elif self.algorithm == 2:
+            #self.tracker = cv2.legacy.TrackerCSRT_create()
+            self.tracker = cv2.TrackerCSRT_create()
+        elif self.algorithm == 3:
+            #self.tracker = cv2.legacy.TrackerKCF_create()
+            self.tracker = cv2.TrackerKCF_create()
+        elif self.algorithm == 4:
+            #self.tracker = cv2.legacy.TrackerMedianFlow_create()
+            self.tracker = cv2.TrackerMedianFlow_create()
+        elif self.algorithm == 5:
+            #self.tracker = cv2.legacy.TrackerMIL_create()
+            self.tracker = cv2.TrackerMIL_create()
+        elif self.algorithm == 6:
+            #self.tracker = cv2.legacy.TrackerMOSSE_create()
+            self.tracker = cv2.TrackerMOSSE_create()
+            #self.tracker = cv2.Tracker("MOSSE")
+        elif self.algorithm == 7:
+            #self.tracker = cv2.legacy.TrackerTLD_create()
+            self.tracker = cv2.TrackerTLD_create()
+        else:
+            self.tracker = None
+        """
+         
     def set_target(self, frame: np.ndarray, bounding_box: list):
         """
         Function to set the target that you want to track.

@@ -58,7 +58,7 @@ Overall, this code integrates object tracking with robot control through ROS, en
 # Initialize Camera and Darknet
 camera = DeviceCamera(4)
 net = DarknetDNN()
-tracker = ObjectTracker(4)
+tracker = ObjectTracker(2 and 3)
 #video = cv2.VideoCapture("C:\\Users\\luthf\\Videos\\Captures\\safety_vest_video.mp4")
 
 # Initialize ROS Node
@@ -86,9 +86,28 @@ net.set_color_threshold(34)
 while not rospy.is_shutdown():
     # Get frame from camera
     frame, depth = camera.get_frame()
+    
+    """
+    # Get the width and height of the frame
+    height, width, _ = frame.shape
+
+    # Print the width and height
+    print("Width:", width)
+    print("Height:", height)
+    """
 
     #tracker.track_object(frame, net)
+
+    #frame 640 x 480 MIL --> std::bad_alloc
     tracker.track_object_with_time(frame, net, 10.0)
+
+    """
+    #MIL
+    resized_frame = cv2.resize(frame, (160, 120))
+    #frame = resized_frame
+    tracker.track_object_with_time(resized_frame, net, 10.0)
+    """
+    
     #print(tracker.get_target_position())
 
     # Publish the command
@@ -125,7 +144,7 @@ while not rospy.is_shutdown():
         if distance is not None:
             msg.target_distance = distance
 
-        rospy.loginfo(msg, tracker.get_target_center(), position)
+        #rospy.loginfo(msg, tracker.get_target_center(), position)
         target_pub.publish(msg)
         vel_pub.publish(vel)
 
