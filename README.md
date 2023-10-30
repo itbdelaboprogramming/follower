@@ -38,7 +38,11 @@ cd ~/catkin_ws/src
 ``` bash
 git clone https://github.com/itbdelaboprogramming/follower.git
 ```
-3. Make the ROS workspace, type `catkin_make` into the terminal and run it.
+3. Go to
+```bash
+cd ~/catkin_ws
+```
+4. Make the ROS workspace, type `catkin_make` into the terminal and run it.
 ``` bash
 catkin_make
 ```
@@ -60,14 +64,203 @@ rosrun rosserial_arduino make_libraries.py .
 ```
 4. Go back to the `follower` directory and go to the Arduino folder.
 ``` bash
-cd ~/catkin_ws/src/follower/Arduino/test_custom_ros_msg
+cd ~/catkin_ws/src/follower/arduino/test_custom_ros_msg
 ```
 5. Open the Arduino sketch with Arduino IDE and upload it to your board.
 ``` bash
 arduino test_custom_ros_msg
 ```
 
-## 3. Run the Package
+## 3. Install the Intel RealSense SDK 2.0
+
+1. Register the server's public key
+``` bash
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE || sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE
+````
+2. Add the server to the list of repositories
+```bash
+sudo add-apt-repository "deb https://librealsense.intel.com/Debian/apt-repo $(lsb_release -cs) main" -u
+```
+3. Install the SDK libraries
+```bash
+sudo apt-get install librealsense2-dkms
+sudo apt-get install librealsense2-dev
+```
+The above two lines will deploy librealsense2 udev rules, build and activate kernel modules, runtime library and executable demos and tools.
+4. Install the developer and debug packages
+```bash
+sudo apt-get install librealsense2-dev
+sudo apt-get install librealsense2-dbg
+```
+5. Reconnect the Intel RealSense device (D435i) and run the command below to verify the installation
+```bash
+realsense-viewer
+```
+## 3.1. Uninstalling the Packages (if the installation goes wrong)
+Removing Debian package is allowed only when no other installed packages directly refer to it. For example removing ```librealsense2-udev-rules``` requires ```librealsense2``` to be removed first.
+
+Remove a single package with:
+```sudo apt-get purge <package-name>```
+
+Remove all RealSense™ SDK-related packages with:
+```dpkg -l | grep "realsense" | cut -d " " -f 3 | xargs sudo dpkg --purge```
+
+The details can be found here: https://github.com/IntelRealSense/librealsense/blob/master/doc/distribution_linux.md
+
+## 4. Upgrading the Packages
+1. Refresh the local package cache
+```bash
+sudo apt-get update
+```
+2. Upgrade all the installed packages, including ```librealsense```
+```bash
+sudo apt-get upgrade
+```
+
+## 5. Install the Intel RealSense ROS from Sources
+1. Go to the catkin workspace in Ubuntu
+```bash
+cd ~/catkin_ws/src/
+```
+2. Clone the latest Intel RealSense ROS
+```bash
+git clone https://github.com/IntelRealSense/realsense-ros.git
+cd realsense-ros/
+git checkout `git tag | sort -V | grep -P "^2.\d+\.\d+" | tail -1`
+cd ..
+```
+3. If there's an error related to the *ddynamic_reconfigure* package not being found, resolve this issue by following the steps below.
+
+3.1 Source the ROS environment
+```bash
+source /opt/ros/noetic/setup.bash
+```
+3.2 Install the missing *ddyanmic_reconfigure* package
+```bash
+sudo apt-get install ros-noetic-ddynamic-reconfigure
+```
+3.3 Once the package is installed, do catkin_make
+```bash
+cd ~/catkin_ws/src/
+catkin_make
+```
+
+## OpenCV 4.2.0.32 (Tracking Algorithm: Boosting, CSRT, KCF, MedianFlow, MIL, MOSSE, TLD)
+
+## 6.1 Install the OpenCV 4.2.0.32 (Directly from Python)
+
+1. Install the OpenCV
+```bash
+pip3 install opencv-python==4.2.0.32
+```
+2. Install the OpenCV-contrib
+```bash
+pip3 install opencv-contrib-python==4.2.0.32
+```
+
+## 6.2 Install the OpenCV 4.2.0 (Build from Source)
+
+1. Install essential dependencies
+```bash
+sudo apt-get install build-essential cmake pkg-config libjpeg-dev libtiff5-dev libpng-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libxvidcore-dev libx264-dev libgtk2.0-dev libgtk-3-dev libatlas-base-dev gfortran
+```
+2. Install additional libraries
+```bash
+sudo apt install libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libdc1394-22-dev
+```
+3. Install Python development packages
+```bash
+sudo apt install python3-dev python3-numpy
+```
+4. Clone the OpenCV repository and checkout version 4.2.0
+```bash
+cd ~  # Go to your home directory or any preferred directory
+wget -O opencv-4.2.0.zip https://github.com/opencv/opencv/archive/4.2.0.zip
+unzip opencv-4.2.0.zip
+```
+Download the OpenCV contrib (optional) for OpenCV extra modules
+```bash
+wget -O opencv_contrib-4.2.0.zip https://github.com/opencv/opencv_contrib/archive/4.2.0.zip
+unzip opencv_contrib-4.2.0.zip
+```
+5. Create a build directoty and navigate to it
+```bash
+cd ~/opencv-4.2.0
+mkdir build
+cd build
+```
+6. Configure the build using CMake
+This step is needed to configure the build with the desired options. It's customizable and the option works depending on the local setup.
+```bash
+cmake -D CMAKE_BUILD_TYPE=RELEASE \
+      -D CMAKE_INSTALL_PREFIX=/usr/local \
+      -D INSTALL_PYTHON_EXAMPLES=ON \
+      -D INSTALL_C_EXAMPLES=OFF \
+      -D OPENCV_ENABLE_NONFREE=ON \
+      -D WITH_TBB=ON \
+      -D WITH_V4L=ON \
+      -D WITH_QT=ON \
+      -D WITH_OPENGL=ON \
+      -D OPENCV_EXTRA_MODULES_PATH=../opencv_contrib/modules ..
+```
+If the build requires Qt5, install Qt5 development packages.
+```bash
+sudo apt-get install qt5-default
+sudo apt-get install libegl1-mesa-dev
+```
+If there's an error regarding the Qt5, disable the Qt components
+```bash
+cmake -D CMAKE_BUILD_TYPE=RELEASE \
+       -D CMAKE_INSTALL_PREFIX=/usr/local \
+       -D INSTALL_PYTHON_EXAMPLES=ON \
+       -D INSTALL_C_EXAMPLES=OFF \
+       -D OPENCV_ENABLE_NONFREE=ON \
+       -D WITH_TBB=ON \
+       -D WITH_V4L=ON \
+       -D WITH_OPENGL=ON \
+       -D WITH_QT=OFF \
+       -D WITH_GTK=OFF \
+       -D WITH_JASPER=OFF \
+       -D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib-4.2.0/modules ..
+```
+7. Build OpenCV.
+Adjust the -j flag to specify the number of CPU cores to use during the build process. Use the number of CPU cores available on the system.
+Check the number of CPU cores available using the command below.
+```bash
+nproc
+```
+Build process
+```bash
+make -j8
+```
+8. Install OpenCV
+```bash
+sudo make install
+```
+9. Configure the library links
+OpenCV 4.2.0 should now be installed in the Ubuntu system after this step.
+```bash
+sudo ldconfig
+```
+10. Verify the installation
+```bash
+python3 -c "import cv2; print(cv2.__version__)"
+```
+
+## OpenCV 4.8.1 (Tracking Algorithm: DaSiamRPN, CSRT, KCF, GOTURN, MIL, Nano)
+
+## 6.1 Install the OpenCV 4.8.1 (Directly from Python) | the latest version is 4.8.1 per 2023/10/25 
+
+1. Install the OpenCV
+```bash
+pip3 install opencv-python
+```
+2. Install the OpenCV-contrib
+```bash
+pip3 install opencv-contrib-python
+```
+
+## 7. Run the Package
 Launch the node by run this command in terminal
 ``` bash
 roslaunch follower follower.launch
