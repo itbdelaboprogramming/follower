@@ -67,14 +67,11 @@ class ObjectTracker(object):
         Args:
             algorithm (int): The tracking algorithm to use (0 to erase, 1 to 7 for specific algorithms).
 
-        Algorithm List:
-            1: Boosting
-            2: CSRT
-            3: KCF
-            4: Median Flow
-            5: MIL
-            6: MOSSE
-            7: TLD
+        Algorithm List (4.8.1) :
+            1: DasiamRPN | 2: CSRT | 3: KCF | 4: GOTURN | 5: MIL | 6: Nano
+        
+        Algorithm List (4.2.0.32) :
+            1: Boosting | 2: CSRT | 3: KCF | 4: Median Flow | 5: MIL | 6: MOSSE | 7: TLD
 
         Other values and 0 will erase the tracker object.
         """
