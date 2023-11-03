@@ -36,7 +36,7 @@ After installing `rosserial` for our machine, we installed `rosserial` arduino l
 cd ~/catkin_ws/src
 ```
 2. Clone the repository
-Ps. Delete the home folder. It contains [a link](./home/libuvc_installation.sh) file for building the SDK without kernel patching.
+Ps. Delete the home folder. It contains [libuvc_installation.sh](./home/libuvc_installation.sh) file for building the SDK without kernel patching.
 ``` bash
 git clone https://github.com/itbdelaboprogramming/follower.git
 ```
@@ -82,25 +82,43 @@ reference: https://dev.intelrealsense.com/docs/nvidia-jetson-tx2-installation?_g
 ```bash
 sudo apt-key adv --keyserver keys.gnupg.net --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE || sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE
 ```
-
 2. Add the server to the list of repositories
 ```bash
 sudo add-apt-repository "deb https://librealsense.intel.com/Debian/apt-repo noetic main" -u
 ```
-
 3. Install the SDK
 ```bash
 sudo apt-get install librealsense2-utils
 sudo apt-get install librealsense2-dev
 ```
-
 4. Reconnect the RealSense device and run ```realsense-viewer``` to verify installation. Double tap after typing ```rs-``` to see full list of SDK examples.
    
 3.2. Building from Source using RSUSB Backend
 Use the RSUSB backend without the kernel patching (avoid kernel patching procedure)
 
 1. Go to home directory
+```bash
+cd
+```
 2. Create the libuvc_installation
+```bash
+touch libuvc_installation.sh
+nano libuvc_installation.sh
+```
+4. Copy this [libuvc_installation.sh](./home/libuvc_installation.sh) file to the opened nano text editor.
+Make sure ```-DBUILD_WITH_CUDA=true``` is included to improve the performance. The code will looks like below.
+```bash
+cmake ../ -DFORCE_LIBUVC=true -DCMAKE_BUILD_TYPE=release -DBUILD_WITH_CUDA=true
+```
+5. Save and exit the text editor.
+6. Add the executable permission.
+```bash
+sudo chmod +x libuvc_installation.sh
+```
+7. Run the script to install.
+```bash
+./libuvc_install.sh
+```
 
 ## 4. Build the OpenCV 4.8.1 with CUDA | the latest version is 4.8.1 per 2023/11/03
 
