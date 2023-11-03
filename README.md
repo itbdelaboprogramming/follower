@@ -120,6 +120,16 @@ sudo chmod +x libuvc_installation.sh
 ./libuvc_install.sh
 ```
 
+3.3. Upgrade the Numpy and Install the Pyrealsense2
+1. Upgrade Numpy
+```bash
+pip3 install numpy --upgrade
+```
+2. Install the Pyrealsense2
+```bash
+pip3 install pyrealsense2
+```
+
 ## 4. Build the OpenCV 4.8.1 with CUDA | the latest version is 4.8.1 per 2023/11/03
 
 1. 
