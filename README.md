@@ -74,7 +74,7 @@ arduino test_custom_ros_msg
 ```
 
 ## 3. Install the LibRealSense SDK Backend
-reference: https://dev.intelrealsense.com/docs/nvidia-jetson-tx2-installation?_ga=2.199325614.1419648290.1698731731-162685563.1698223953
+Reference: https://dev.intelrealsense.com/docs/nvidia-jetson-tx2-installation?_ga=2.199325614.1419648290.1698731731-162685563.1698223953
 
 3.1. Install the Debian Packages and SDK
 
@@ -110,17 +110,17 @@ Make sure ```-DBUILD_WITH_CUDA=true``` is included to improve the performance. T
 ```bash
 cmake ../ -DFORCE_LIBUVC=true -DCMAKE_BUILD_TYPE=release -DBUILD_WITH_CUDA=true
 ```
-5. Save and exit the text editor.
-6. Add the executable permission.
+5. Save and exit the text editor. Then, add the executable permission.
 ```bash
 sudo chmod +x libuvc_installation.sh
 ```
-7. Run the script to install.
+6. Run the script to install.
 ```bash
 ./libuvc_install.sh
 ```
 
 3.3. Upgrade the Numpy and Install the Pyrealsense2
+
 1. Upgrade Numpy
 ```bash
 pip3 install numpy --upgrade
@@ -130,11 +130,55 @@ pip3 install numpy --upgrade
 pip3 install pyrealsense2
 ```
 
-## 4. Build the OpenCV 4.8.1 with CUDA | the latest version is 4.8.1 per 2023/11/03
+## 4. Build the OpenCV 4.8.1 with CUDA Compability | the latest version is 4.8.1 per 2023/11/03
+Default: OpenCV with SDK Manager (JetPack 5.1) without CUDA Compatibility | check the specification by running ```jtop```
+Reference: https://youtu.be/art0-99fFa8?si=TJeyWqiygaaqr1A0
 
-1. 
+1. Clone the github
+```bash
+git clone https://github.com/mdegans/nano_build_opencv.git
+```
+
+2. Go to the nano_build_opencv directory and open the build_opencv.sh
+```bash
+cd nano_build_opencv
+gedit build_opencv.sh
+```
+
+3. Make sure the CUDNN_VERSION are set according to the version shown on ```jtop```.
+```bash
+-D CUDNN_VERSION='8.6'
+```
+
+4. Save and exit the text editor. Then, run the script to build the script according to the OpenCV version.
+Ps. The build process takes around ~3 hours to complete.
+```bash
+./build_opencv.sh 4.8.1
+```
+
+5. After the build process, there will be a request for the password, just insert the password. Then there will be an installation process. The installation will take ~2 minutes.
+
+6. After installation, there will be a question
+"Do you wish to remove temporary
 
 ## 5. Run the Package
+
+5.1 Test the follower code
+
+1. Test the follow_me code by running the commands below.
+```bash
+roscore
+rosrun follower follow_me.py
+```
+
+2. Check the topic to get the position and distance
+```bash
+rostopic list
+rostopic echo /rover_command
+```
+
+5.2 Launch the whole program after uploading this [code](./arduino/test_custom_ros_msg/test_custom_ros_msg.ino) to the arduino board
+
 Launch the node by run this command in terminal
 ``` bash
 roslaunch follower follower.launch
