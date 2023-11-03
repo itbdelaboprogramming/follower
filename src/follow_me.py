@@ -119,7 +119,7 @@ while not rospy.is_shutdown():
         position = tracker.get_target_position()
         distance = tracker.get_target_distance(depth)
 
-        print(tracker.get_target_center(), "->", position)
+        print(tracker.get_target_center(), "->", position, "->", distance)
 
         vel = Twist()
         if distance is not None:
