@@ -35,7 +35,7 @@ After installing `rosserial` for our machine, we installed `rosserial` arduino l
 ``` bash
 cd ~/catkin_ws/src
 ```
-2. Clone the repository
+2. Clone the repository.
 Ps. Delete the home folder. It contains [libuvc_installation.sh](./home/libuvc_installation.sh) file for building the SDK without kernel patching.
 ``` bash
 git clone https://github.com/itbdelaboprogramming/follower.git
@@ -51,7 +51,7 @@ catkin_make
 
 ## 2. Setup the Arduino Board
 
-1. Run the ROS Environment
+1. Run the ROS Environment.
 ``` bash
 roscore
 ```
@@ -78,15 +78,15 @@ Reference: https://dev.intelrealsense.com/docs/nvidia-jetson-tx2-installation?_g
 
 3.1. Install the Debian Packages and SDK
 
-1. Register the server's public key
+1. Register the server's public key.
 ```bash
 sudo apt-key adv --keyserver keys.gnupg.net --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE || sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE
 ```
-2. Add the server to the list of repositories
+2. Add the server to the list of repositories.
 ```bash
 sudo add-apt-repository "deb https://librealsense.intel.com/Debian/apt-repo noetic main" -u
 ```
-3. Install the SDK
+3. Install the SDK.
 ```bash
 sudo apt-get install librealsense2-utils
 sudo apt-get install librealsense2-dev
@@ -94,13 +94,13 @@ sudo apt-get install librealsense2-dev
 4. Reconnect the RealSense device and run ```realsense-viewer``` to verify installation. Double tap after typing ```rs-``` to see full list of SDK examples.
    
 3.2. Building from Source using RSUSB Backend
-Use the RSUSB backend without the kernel patching (avoid kernel patching procedure)
+Use the RSUSB backend without the kernel patching (avoid kernel patching procedure).
 
-1. Go to home directory
+1. Go to home directory.
 ```bash
 cd
 ```
-2. Create the libuvc_installation
+2. Create the libuvc_installation.
 ```bash
 touch libuvc_installation.sh
 nano libuvc_installation.sh
@@ -121,11 +121,11 @@ sudo chmod +x libuvc_installation.sh
 
 3.3. Upgrade the Numpy and Install the Pyrealsense2
 
-1. Upgrade Numpy
+1. Upgrade Numpy.
 ```bash
 pip3 install numpy --upgrade
 ```
-2. Install the Pyrealsense2
+2. Install the Pyrealsense2.
 ```bash
 pip3 install pyrealsense2
 ```
@@ -134,32 +134,58 @@ pip3 install pyrealsense2
 Default: OpenCV with SDK Manager (JetPack 5.1) without CUDA Compatibility | check the specification by running ```jtop```
 Reference: https://youtu.be/art0-99fFa8?si=TJeyWqiygaaqr1A0
 
-1. Clone the github
+4.1. Build the OpenCV with CUDA
+
+1. Clone the Github.
 ```bash
+cd
 git clone https://github.com/mdegans/nano_build_opencv.git
 ```
-
 2. Go to the nano_build_opencv directory and open the build_opencv.sh
 ```bash
 cd nano_build_opencv
 gedit build_opencv.sh
 ```
-
 3. Make sure the CUDNN_VERSION are set according to the version shown on ```jtop```.
 ```bash
 -D CUDNN_VERSION='8.6'
 ```
-
 4. Save and exit the text editor. Then, run the script to build the script according to the OpenCV version.
 Ps. The build process takes around ~3 hours to complete.
 ```bash
 ./build_opencv.sh 4.8.1
 ```
-
 5. After the build process, there will be a request for the password, just insert the password. Then there will be an installation process. The installation will take ~2 minutes.
 
-6. After installation, there will be a question
-"Do you wish to remove temporary
+6. After installation, there will be a question. Answer it with N.
+"Do you wish to remove temporary build files in /tmp/build_opencv ? (Doing so may make running tests on the build later impossible)
+
+7. The installation has completed. Check ```jtop```. It will show OpenCV: 4.8.1 - with CUDA: YES.
+
+4.2. Locate the Python to enable the OpenCV in Python
+
+1. Locate the Python library. Default location: /usr/local/lib/python3.8. Check yours by using ```ls```.
+```bash
+ls /usr/local/lib/python3.8
+```
+2. Open .bashrc and add the Python path to the last line of .bashrc.
+```bash
+export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/site-packages
+```
+3. Save and exit. The overall paths detected by Python will be shown in PYTHONPATH variable. The output should be /usr/local/lib/python3.8/site-packages.
+```bash
+$PYTHONPATH
+```
+4. Source back the bashrc.
+```bash
+source .bashrc
+```
+5. Check the OpenCV version and details here.
+```bash
+python3
+>>> import cv2
+>>> print(cv2.getBuildInformation())
+```
 
 ## 5. Run the Package
 
@@ -171,15 +197,15 @@ roscore
 rosrun follower follow_me.py
 ```
 
-2. Check the topic to get the position and distance
+2. Check the topic to get the position and distance.
 ```bash
 rostopic list
 rostopic echo /rover_command
 ```
 
-5.2 Launch the whole program after uploading this [code](./arduino/test_custom_ros_msg/test_custom_ros_msg.ino) to the arduino board
+5.2 Launch the whole program after uploading this [code](./arduino/test_custom_ros_msg/test_custom_ros_msg.ino) to the arduino board.
 
-Launch the node by run this command in terminal
+Launch the node by run this command in terminal.
 ``` bash
 roslaunch follower follower.launch
 ```
