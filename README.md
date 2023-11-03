@@ -174,7 +174,7 @@ export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/site-packages
 ```
 3. Save and exit. The overall paths detected by Python will be shown in PYTHONPATH variable. The output should be /usr/local/lib/python3.8/site-packages.
 ```bash
-$PYTHONPATH
+echo $PYTHONPATH
 ```
 4. Source back the bashrc.
 ```bash
@@ -185,6 +185,10 @@ source .bashrc
 python3
 >>> import cv2
 >>> print(cv2.getBuildInformation())
+```
+```bash
+~/nano_build_opencv
+cd ls/usr/local/lib/
 ```
 
 ## 5. Run the Package
