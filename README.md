@@ -172,7 +172,7 @@ ls /usr/local/lib/python3.8
 ```bash
 export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/site-packages
 ```
-3. Save and exit. The overall paths detected by Python will be shown in PYTHONPATH variable. The output should be /usr/local/lib/python3.8/site-packages.
+3. Save and exit. The overall paths detected by Python will be shown in PYTHONPATH variable. One of the outputs should be /usr/local/lib/python3.8/site-packages.
 ```bash
 echo $PYTHONPATH
 ```
