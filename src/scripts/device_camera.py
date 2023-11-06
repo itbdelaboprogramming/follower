@@ -36,7 +36,7 @@ class DeviceCamera:
     
     You can also scan the device id.
     """
-    def __init__(self, device_id = None, realsense = True):
+    def __init__(self, device_id = None, camera_fps = 30, realsense = True):
         print("Loading camera ...")
 
         # Check if pyrealsense2 is available
@@ -52,6 +52,7 @@ class DeviceCamera:
         # Initialize device
         #print(self.realsense)
         #print(self.rs)
+        self.camera_fps = camera_fps
         if self.realsense:
             print("Starting realsense")
             self.winname = "Realsense"
@@ -90,8 +91,8 @@ class DeviceCamera:
         # Configure depth and color streams
         self.pipeline = self.rs.pipeline()
         config = self.rs.config()
-        config.enable_stream(self.rs.stream.depth, 640, 480, self.rs.format.z16, 30)
-        config.enable_stream(self.rs.stream.color, 640, 480, self.rs.format.bgr8, 30)
+        config.enable_stream(self.rs.stream.depth, 640, 480, self.rs.format.z16, self.camera_fps)
+        config.enable_stream(self.rs.stream.color, 640, 480, self.rs.format.bgr8, self.camera_fps)
 
         # Start streaming
         self.pipeline.start(config)

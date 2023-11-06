@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import time as tm
 from darknet_yolo import DarknetDNN
+import cv2.aruco as aruco
 
 """
 Real-Time Object Tracking with ObjectTracker and DarknetDNN
@@ -60,7 +61,7 @@ Overall, this code exemplifies the implementation of real-time object tracking b
 
 
 class ObjectTracker(object):
-    def __init__(self, algorithm: int = 0):
+    def __init__(self, algorithm: int = 0, use_aruco: bool = False):
         """
         Initialize an object tracker with various tracking algorithms.
 
@@ -85,6 +86,8 @@ class ObjectTracker(object):
         self.tracking_time = tm.time()
         self.frame_height = None
         self.frame_width = None
+        self.use_aruco = use_aruco
+        self.aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
     
     def create(self):
         """
@@ -171,32 +174,57 @@ class ObjectTracker(object):
          frame: the current frame input for detection and tracking.
          net: DarknetDNN object for object detection.
         """
-        self.create()
-        net.detect_object(frame, 0)
-        net.show_target(frame)
-        bbox = net.get_target_box()
-        self.target_bounding_box = None
-        if bbox is not None:
-            x1, y1, x2, y2 = bbox
-            self.target_bounding_box = [x1, y1, x2 - x1, y2 - y1]
-            ret = self.set_target(frame, self.target_bounding_box)
-            self.tracking_flag = True
-            #print(ret)
+        if self.use_aruco:
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            corners, ids, rejected = aruco.detectMarkers(gray, self.aruco_dict)
+            if ids is not None:
+                self.tracking_flag = True
+        else:
+            self.create()
+            net.detect_object(frame, 0)
+            net.show_target(frame)
+            bbox = net.get_target_box()
+            self.target_bounding_box = None
+            # print(bbox)
+            if bbox is not None:
+                x1, y1, x2, y2 = bbox
+                self.target_bounding_box = [x1, y1, x2 - x1, y2 - y1]
+                ret = self.set_target(frame, self.target_bounding_box)
+                self.tracking_flag = True
+                #print(ret)
     
     def tracking(self, frame: np.ndarray):
         """This method is for tracking and updating the bounding box for the tracked object after detecting it.
         @param:
          frame: the current input frame from camera.
         """
-        success, self.target_bounding_box = self.update(frame)
-        if success:
-            x1, y1, w, h = [int(n) for n in self.target_bounding_box]
-            #cx = int(x1 + w/2)
-            #cy = int(y1 + h/2)
-            cx, cy = self.get_target_center()
-            cv2.rectangle(frame, (x1,y1), (x1+w, y1+h), (255,0,0), 2)
-            cv2.circle(frame, (cx,cy), 5, (255,0,0), 1)
+        reset = False
+        if self.use_aruco:
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            corners, ids, rejected = aruco.detectMarkers(gray, self.aruco_dict)
+            if ids is not None:
+                [x1, y1] = corners[0][0][0]
+                [x2, y2] = corners[0][0][2]
+                self.target_bounding_box = [x1, y1, x2 - x1, y2 - y1]
+                self.image_height, self.image_width, self.image_channels = frame.shape
+                aruco.drawDetectedMarkers(frame, corners, ids)
+                cx, cy = self.get_target_center()
+                cv2.circle(frame, (cx,cy), 5, (255,0,0), 1)
+            else:
+                reset = True
         else:
+            success, self.target_bounding_box = self.update(frame)
+            if success:
+                x1, y1, w, h = [int(n) for n in self.target_bounding_box]
+                #cx = int(x1 + w/2)
+                #cy = int(y1 + h/2)
+                cx, cy = self.get_target_center()
+                cv2.rectangle(frame, (x1,y1), (x1+w, y1+h), (255,0,0), 2)
+                cv2.circle(frame, (cx,cy), 5, (255,0,0), 1)
+            else:
+                reset = True
+
+        if reset:
             self.clear()
             self.tracking_flag = False
             self.target_bounding_box = None

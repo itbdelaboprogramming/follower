@@ -70,6 +70,7 @@ Overall, this code facilitates real-time robot control through ROS and RC input,
 #define RC_CH3      47
 #define RC_CH4      43 // used as failsafe
 #define RC_CH5      42
+#define RC_DEAD_ZONE 20
 
 // MT is motor, used to customize motor parameter
 #define MT_MAX_PWM  200
@@ -94,7 +95,7 @@ Overall, this code facilitates real-time robot control through ROS and RC input,
 #define CAM_SERVO 2
 
 //DISTANCE TO MAINTAIN
-#define DISTANCE 200
+#define DISTANCE 100
 
 // ARMED and DISARMED
 #define ARMED    0x00
@@ -256,6 +257,9 @@ void loop() {
 void update_rc(){
   for(byte i = 1; i <= 5; i++){
     pwm_in[i] = receiver.getRaw(i) + pwm_offset[i];
+    if(abs(pwm_in[i] - 1500) < RC_DEAD_ZONE){
+      pwm_in[i] = 1500;
+    }
   }
 }
 
