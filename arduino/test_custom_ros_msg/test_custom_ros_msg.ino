@@ -73,7 +73,7 @@ Overall, this code facilitates real-time robot control through ROS and RC input,
 #define RC_DEAD_ZONE 20
 
 // MT is motor, used to customize motor parameter
-#define MT_MAX_PWM  200
+#define MT_MAX_PWM  255
 
 // ML is motor on the left
 #define ML_EN   7
