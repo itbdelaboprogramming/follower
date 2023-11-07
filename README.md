@@ -84,7 +84,7 @@ sudo apt-key adv --keyserver keys.gnupg.net --recv-key F6E65AC044F831AC80A06380C
 ```
 2. Add the server to the list of repositories.
 ```bash
-sudo add-apt-repository "deb https://librealsense.intel.com/Debian/apt-repo noetic main" -u
+sudo add-apt-repository "deb https://librealsense.intel.com/Debian/apt-repo focal main" -u
 ```
 3. Install the SDK.
 ```bash
