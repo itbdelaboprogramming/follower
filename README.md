@@ -185,10 +185,6 @@ python3
 >>> import cv2
 >>> print(cv2.getBuildInformation())
 ```
-```bash
-~/nano_build_opencv
-cd ls/usr/local/lib/
-```
 
 ## 5. Run the Package
 
