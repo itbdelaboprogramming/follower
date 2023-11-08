@@ -116,7 +116,7 @@ sudo chmod +x libuvc_installation.sh
 ```
 6. Run the script to install.
 ```bash
-./libuvc_install.sh
+./libuvc_installation.sh
 ```
 
 3.3. Upgrade the Numpy and Install the Pyrealsense2
