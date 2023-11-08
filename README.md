@@ -150,8 +150,7 @@ gedit build_opencv.sh
 ```bash
 -D CUDNN_VERSION='8.6'
 ```
-4. Save and exit the text editor. Then, run the script to build the script according to the OpenCV version.
-Ps. The build process takes around ~3 hours to complete.
+4. Save and exit the text editor. Then, run the script to build the script according to the OpenCV version. The build process takes around ~3 hours to complete.
 ```bash
 ./build_opencv.sh 4.8.1
 ```
