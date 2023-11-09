@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="port" default="/dev/ttyACM0"/>
-    <arg name="baut" default="57600"/>
+    <arg name="baud" default="57600"/>
 
     <node pkg="follower" type="follow_me.py" name="camera_control"></node>
 
