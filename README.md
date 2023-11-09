@@ -72,6 +72,23 @@ cd ~/catkin_ws/src/follower/arduino/test_custom_ros_msg
 ``` bash
 arduino test_custom_ros_msg
 ```
+6. Change the follower launch for Arduino port /dev/ttyACM0.
+```bash
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="port" default="/dev/ttyACM0"/>
+    <arg name="baud" default="57600"/>
+
+    <node pkg="follower" type="follow_me.py" name="camera_control"></node>
+
+    <node pkg="rosserial_python" type="serial_node.py" name="serial_node">
+        <param name="port" value="$(arg port)"/>
+        <param name="baud" value="$(arg baud)"/>
+    </node>
+
+</launch>
+```
 
 ## 3. Install the LibRealSense SDK Backend
 Reference: https://dev.intelrealsense.com/docs/nvidia-jetson-tx2-installation?_ga=2.199325614.1419648290.1698731731-162685563.1698223953
