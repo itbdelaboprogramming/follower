@@ -72,6 +72,23 @@ cd ~/catkin_ws/src/follower/arduino/test_custom_ros_msg
 ``` bash
 arduino test_custom_ros_msg
 ```
+6. Change the follower launch for Arduino port /dev/ttyACM0.
+```bash
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="port" default="/dev/ttyACM0"/>
+    <arg name="baud" default="57600"/>
+
+    <node pkg="follower" type="follow_me.py" name="camera_control"></node>
+
+    <node pkg="rosserial_python" type="serial_node.py" name="serial_node">
+        <param name="port" value="$(arg port)"/>
+        <param name="baud" value="$(arg baud)"/>
+    </node>
+
+</launch>
+```
 
 ## 3. Install the LibRealSense SDK Backend
 Reference: https://dev.intelrealsense.com/docs/nvidia-jetson-tx2-installation?_ga=2.199325614.1419648290.1698731731-162685563.1698223953
@@ -84,7 +101,7 @@ sudo apt-key adv --keyserver keys.gnupg.net --recv-key F6E65AC044F831AC80A06380C
 ```
 2. Add the server to the list of repositories.
 ```bash
-sudo add-apt-repository "deb https://librealsense.intel.com/Debian/apt-repo noetic main" -u
+sudo add-apt-repository "deb https://librealsense.intel.com/Debian/apt-repo focal main" -u
 ```
 3. Install the SDK.
 ```bash
@@ -116,7 +133,7 @@ sudo chmod +x libuvc_installation.sh
 ```
 6. Run the script to install.
 ```bash
-./libuvc_install.sh
+./libuvc_installation.sh
 ```
 
 3.3. Upgrade the Numpy and Install the Pyrealsense2
@@ -150,8 +167,7 @@ gedit build_opencv.sh
 ```bash
 -D CUDNN_VERSION='8.6'
 ```
-4. Save and exit the text editor. Then, run the script to build the script according to the OpenCV version.
-Ps. The build process takes around ~3 hours to complete.
+4. Save and exit the text editor. Then, run the script to build the script according to the OpenCV version. The build process takes around ~3 hours to complete.
 ```bash
 ./build_opencv.sh 4.8.1
 ```
@@ -185,10 +201,6 @@ source .bashrc
 python3
 >>> import cv2
 >>> print(cv2.getBuildInformation())
-```
-```bash
-~/nano_build_opencv
-cd ls/usr/local/lib/
 ```
 
 ## 5. Run the Package
