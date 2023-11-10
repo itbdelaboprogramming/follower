@@ -70,6 +70,7 @@ target_dist = rospy.get_param("~distance",1.0) #default is 1.0 m
 use_aruco = rospy.get_param("~use_aruco", True) #default is True --> for color detection set to False
 camera_fps = rospy.get_param("~camera_fps", 60) #default is 60 --> for color detection set to 30
 frequency  = rospy.get_param("~follow_me_node_frequency", 40) #default is 40 hz (jetson max realsense fps is 40-ish fps) --> for color detection set to 30
+stop_dist = rospy.get_param("~stop_dist", 0.5) # stop distance threshold, default is 0.5 m
 
 # Initialize Camera and Darknet
 camera = DeviceCamera(4, camera_fps)
@@ -118,7 +119,7 @@ while not rospy.is_shutdown():
     msg.target_distance = -1.0
     msg.target_position = 0
 
-    position = tracker.get_target_position()
+    position = tracker.get_target_position(depth, stop_dist)
     distance = tracker.get_target_distance(depth)
 
     print(tracker.get_target_center(), "->", position)

@@ -270,11 +270,16 @@ class ObjectTracker(object):
         else:
             return None, None
         
-    def get_target_position(self):
-        """Function to get target position. Image is divided into 3 sector in x axis. If the target is on the Left, Center or Right it will return String with that sector, else it will return 'Hold'."""
+    def get_target_position(self, depth: np.ndarray, threshold: float):
+        """Function to get target position. Image is divided into 3 sector in x axis. If the target is on the Left, Center or Right it will return String with that sector, else it will return 'Hold'.
+            @param:
+            depth: depth image from IntelRealsense in np.ndarray format 
+                    (each element is in mm)
+            threshold: stop threshold value in meter
+        """
         cx, cy = self.get_target_center()
-        
-        if cx is None:
+        is_obstacle_ahead = self.is_obstacle_ahead(depth, threshold)
+        if cx is None or is_obstacle_ahead:
             return 'Hold'
         
         if cx <= self.image_width/3:
@@ -307,3 +312,13 @@ class ObjectTracker(object):
                 pass
             """
             return distance
+    
+    def is_obstacle_ahead(self, depth: np.ndarray, threshold: float):
+        """Function to check if there is an obstacle within threshold.
+        @param:
+         depth: depth image from IntelRealsense in np.ndarray format 
+                (each element is in mm)
+         threshold: stop threshold value in meter
+        """
+        threshold_mm = threshold * 1000
+        return np.any((depth <= threshold_mm) & (depth > 0.0))
