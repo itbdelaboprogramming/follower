@@ -278,15 +278,18 @@ class ObjectTracker(object):
             threshold: stop threshold value in meter
         """
         cx, cy = self.get_target_center()
-        is_object_ahead = self.is_object_ahead(depth, threshold)
-        if cx is None or is_object_ahead:
+        obj_left, obj_center, obj_right = self.is_object_within_threshold(depth, threshold)
+        
+        if cx is None:
             return 'Hold'
-        elif cx <= self.image_width/3:
+        elif cx <= self.image_width/3 and not obj_left:
             return 'Left'
-        elif cx >= 2 * self.image_width/3:
+        elif cx >= 2 * self.image_width/3 and not obj_right:
             return 'Right'
-        else:
+        elif not obj_center:
             return 'Center'
+        else:
+            return 'Hold'
         
     def get_target_distance(self, depth: np.ndarray):
         """Function to get the target distance in cm.
@@ -312,15 +315,26 @@ class ObjectTracker(object):
             """
             return distance
     
-    def is_object_ahead(self, depth: np.ndarray, threshold: float):
+    def is_object_within_threshold(self, depth: np.ndarray, threshold: float):
         """Function to check if there is an obstacle within threshold.
         @param:
          depth: depth image from IntelRealsense in np.ndarray format 
                 (each element is in mm)
          threshold: stop threshold value in meter
+        @return:
+            bool, bool, bool --> (obj on left, obj on center, obj on right)
         """
-        threshold_mm = threshold * 1000
         if depth != None:
-            return np.any((depth <= threshold_mm) & (depth > 0.0))
+            threshold_mm = threshold * 1000
+            indexes = np.where((depth > 0.0) & (depth <= threshold_mm))
+            row_indexes, col_indexes = indexes
+            if len(row_indexes) > 0 and len(col_indexes) > 0:
+                pixel_list = np.column_stack((col_indexes, row_indexes)) # --> [[x,y], [x,y], ...]
+                obj_left = np.any(pixel_list[:, 0] < self.image_width/3)
+                obj_center = np.any((pixel_list[:, 0] >= self.image_width/3) & (pixel_list[:, 0] <= 2 * self.image_width/3))
+                obj_right = np.any(pixel_list[:, 0] > 2 * self.image_width/3)
+                return obj_left, obj_center, obj_right
+            else:
+                return False, False, False
         else:
-            return False
+            return False, False, False
