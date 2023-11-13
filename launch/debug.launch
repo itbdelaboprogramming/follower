@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="follower" type="follow_me.py" name="follower_node" respawn="true" output="screen"></node>
+    <rosparam command="load" file="$(find follower)/config/follower.yaml" />
+    <param name="use_debug" value="true" />
+</launch>

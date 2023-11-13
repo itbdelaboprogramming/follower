@@ -321,4 +321,7 @@ class ObjectTracker(object):
          threshold: stop threshold value in meter
         """
         threshold_mm = threshold * 1000
-        return np.any((depth <= threshold_mm) & (depth > 0.0))
+        if depth != None:
+            return np.any((depth <= threshold_mm) & (depth > 0.0))
+        else:
+            return False

@@ -1,5 +1,9 @@
 <?xml version="1.0"?>
 <launch>
-    <node pkg="follower" type="follow_me.py" name="camera_control" respawn="true"></node>
-    <node pkg="rosserial_python" type="serial_node.py" name="serial_node" respawn="true"></node>
+    <node pkg="follower" type="follow_me.py" name="follower_node" respawn="true"></node>
+    <node pkg="rosserial_python" type="serial_node.py" name="serial_node" respawn="true">
+        <param name="port" value="/dev/ttyUSB0"/>
+        <param name="baud" value="57600"/>
+    </node>
+    <rosparam command="load" file="$(find follower)/config/follower.yaml" />
 </launch>

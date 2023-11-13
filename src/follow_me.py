@@ -63,23 +63,25 @@ rospy.init_node('follow_me_node')
 target_pub = rospy.Publisher('rover_command', TargetState, queue_size=1)
 vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
 
-# Define Parameters
-max_speed = rospy.get_param("~max_speed",1.0) #default is 1 m/s
-max_turn = rospy.get_param("~max_turn",0.8) #default is 0.8 rad/s
-target_dist = rospy.get_param("~distance",1.0) #default is 1.0 m
-use_aruco = rospy.get_param("~use_aruco", True) #default is True --> for color detection set to False
-camera_fps = rospy.get_param("~camera_fps", 60) #default is 60 --> for color detection set to 30
-frequency  = rospy.get_param("~follow_me_node_frequency", 40) #default is 40 hz (jetson max realsense fps is 40-ish fps) --> for color detection set to 30
-stop_dist = rospy.get_param("~stop_dist", 0.5) # stop distance threshold, default is 0.5 m
+# ROS Parameters
+camera_id = rospy.get_param("/camera_id")
+max_speed = rospy.get_param("/max_speed") 
+max_turn = rospy.get_param("/max_turn") 
+target_dist = rospy.get_param("/target_dist") 
+stop_dist = rospy.get_param("/stop_dist") 
+node_frequency  = rospy.get_param("/node_frequency")
+use_aruco = rospy.get_param("/use_aruco") 
+camera_fps = rospy.get_param("/camera_fps") 
+use_debug = rospy.get_param("/use_debug", False)
 
 # Initialize Camera and Darknet
-camera = DeviceCamera(4, camera_fps)
+camera = DeviceCamera(camera_id, camera_fps)
 net = DarknetDNN()
 tracker = ObjectTracker(2 and 3, use_aruco)
 #video = cv2.VideoCapture("C:\\Users\\luthf\\Videos\\Captures\\safety_vest_video.mp4")
 
 # Node frequency
-rate = rospy.Rate(frequency) 
+rate = rospy.Rate(node_frequency) 
 
 # Set HSV color range and color threshold for object detection
 low_hsv = np.array([0, 221, 102], dtype=np.uint8)
@@ -151,17 +153,17 @@ while not rospy.is_shutdown():
     target_pub.publish(msg)
     vel_pub.publish(vel)
     
-    # debug show image
-    #frame = camera.show_fps(frame)
+    if (use_debug):
+        frame = camera.show_fps(frame)
 
-    # Show the result
-    #cv2.imshow("Video", frame)
+        # Show the result
+        cv2.imshow("Video", frame)
 
-    # Exit condition
-    # key = cv2.waitKey(1)
-    # if key == 27 or key == ord('q'):
-    #     print(f"Key {key} is pressed")
-    #     break
+        # Exit condition
+        key = cv2.waitKey(1)
+        if key == 27 or key == ord('q'):
+            print(f"Key {key} is pressed")
+            break
     rate.sleep()
 
 camera.stop()
