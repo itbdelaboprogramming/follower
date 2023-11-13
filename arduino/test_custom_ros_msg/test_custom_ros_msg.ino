@@ -94,9 +94,6 @@ Overall, this code facilitates real-time robot control through ROS and RC input,
 // SERVO
 #define CAM_SERVO 2
 
-//DISTANCE TO MAINTAIN
-#define DISTANCE 100
-
 // ARMED and DISARMED
 #define ARMED    0x00
 #define DISARMED 0x01
@@ -303,7 +300,7 @@ void update_cmd(){
       } else if (target_position_ == 2){
         rotate_right();
         msg[0] = 'R';
-      } else if (target_position_ == 3 && target_distance_ > DISTANCE){
+      } else if (target_position_ == 3){
         move_forward();
         msg[0] = 'C';
       } else {

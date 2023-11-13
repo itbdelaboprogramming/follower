@@ -1,7 +1,6 @@
 camera_id: 4   # camera id
 max_speed: 1.0     # m/s
 max_turn: 0.8      # rad/s
-target_dist: 1.0   # m
 stop_dist: 0.5     # m, stop distance threshold, default is 0.5 m
 node_frequency: 40 # Hz, #(jetson max realsense fps is 40-ish fps) --> for color detection set to 30
 use_aruco: true   

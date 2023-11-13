@@ -278,11 +278,10 @@ class ObjectTracker(object):
             threshold: stop threshold value in meter
         """
         cx, cy = self.get_target_center()
-        is_obstacle_ahead = self.is_obstacle_ahead(depth, threshold)
-        if cx is None or is_obstacle_ahead:
+        is_object_ahead = self.is_object_ahead(depth, threshold)
+        if cx is None or is_object_ahead:
             return 'Hold'
-        
-        if cx <= self.image_width/3:
+        elif cx <= self.image_width/3:
             return 'Left'
         elif cx >= 2 * self.image_width/3:
             return 'Right'
@@ -313,7 +312,7 @@ class ObjectTracker(object):
             """
             return distance
     
-    def is_obstacle_ahead(self, depth: np.ndarray, threshold: float):
+    def is_object_ahead(self, depth: np.ndarray, threshold: float):
         """Function to check if there is an obstacle within threshold.
         @param:
          depth: depth image from IntelRealsense in np.ndarray format 

@@ -67,7 +67,6 @@ vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
 camera_id = rospy.get_param("/camera_id")
 max_speed = rospy.get_param("/max_speed") 
 max_turn = rospy.get_param("/max_turn") 
-target_dist = rospy.get_param("/target_dist") 
 stop_dist = rospy.get_param("/stop_dist") 
 node_frequency  = rospy.get_param("/node_frequency")
 use_aruco = rospy.get_param("/use_aruco") 
@@ -128,7 +127,7 @@ while not rospy.is_shutdown():
 
     vel = Twist()
     if distance is not None:
-        vel.linear.x = max(min(0.4*round((target_dist-distance)/10)*10, max_speed), -max_speed) #round the distance error into 10^1 cm order then multiplies it by a proportional factor of 0.4, then constraint it into [-max_speed, max_speed]
+        vel.linear.x = max(min(0.4*round((stop_dist-distance)/10)*10, max_speed), -max_speed) #round the distance error into 10^1 cm order then multiplies it by a proportional factor of 0.4, then constraint it into [-max_speed, max_speed]
     else:
         vel.linear.x = 0.0
 
