@@ -336,7 +336,7 @@ class ObjectTracker(object):
         @return:
             bool, bool, bool --> (obj on left, obj on center, obj on right)
         """
-        if depth != None:
+        if depth is not None:
             threshold_mm = threshold * 1000
             indexes = np.where((depth > 0.0) & (depth <= threshold_mm))
             row_indexes, col_indexes = indexes
