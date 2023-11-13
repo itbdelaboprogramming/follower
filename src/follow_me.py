@@ -120,10 +120,10 @@ while not rospy.is_shutdown():
     msg.target_distance = -1.0
     msg.target_position = 0
 
-    position = tracker.get_target_position(depth, stop_dist)
+    move_position, cam_position = tracker.get_target_position(depth, stop_dist)
     distance = tracker.get_target_distance(depth)
 
-    print(tracker.get_target_center(), "->", position)
+    print(tracker.get_target_center(), "->", move_position, "->", cam_position)
 
     vel = Twist()
     if distance is not None:
@@ -131,13 +131,14 @@ while not rospy.is_shutdown():
     else:
         vel.linear.x = 0.0
 
-    if position == 'Right':
+    # move command
+    if move_position == 'Right':
         msg.target_position = 1
         vel.angular.z = max_turn
-    elif position == 'Left':
+    elif move_position == 'Left':
         msg.target_position = 2
         vel.angular.z = -max_turn
-    elif position == 'Center':
+    elif move_position == 'Center':
         msg.target_position = 3
         vel.angular.z = 0.0
     else:
@@ -145,6 +146,15 @@ while not rospy.is_shutdown():
         vel.linear.x = 0.0
         vel.angular.z = 0.0
     
+    # camera command
+    if cam_position == 'Up':
+        msg.cam_angle_command = 1
+    elif cam_position == 'Down':
+        msg.cam_angle_command = 2
+    else:
+        msg.cam_angle_command = 0
+    
+    # distnce info
     if distance is not None:
         msg.target_distance = distance
     

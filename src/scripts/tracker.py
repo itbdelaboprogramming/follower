@@ -279,17 +279,29 @@ class ObjectTracker(object):
         """
         cx, cy = self.get_target_center()
         obj_left, obj_center, obj_right = self.is_object_within_threshold(depth, threshold)
-        
         if cx is None:
-            return 'Hold'
-        elif cx <= self.image_width/3 and not obj_left:
-            return 'Left'
-        elif cx >= 2 * self.image_width/3 and not obj_right:
-            return 'Right'
-        elif not obj_center:
-            return 'Center'
+            move_cmd = 'Hold'
         else:
-            return 'Hold'
+            if cx <= self.image_width/3 and not obj_left:
+                move_cmd = 'Left'
+            elif cx >= 2 * self.image_width/3 and not obj_right:
+                move_cmd = 'Right'
+            elif not obj_center:
+                move_cmd = 'Center'
+            else:
+                move_cmd = 'Hold'
+        
+        if cy is None:
+            cam_angle_cmd = 'Hold'
+        else:
+            if cy <= self.image_height/3:
+                cam_angle_cmd = 'Up'
+            elif cy >= 2 * self.image_height/3:
+                cam_angle_cmd = 'Down'
+            else:
+                cam_angle_cmd = 'Hold'
+        
+        return move_cmd, cam_angle_cmd
         
     def get_target_distance(self, depth: np.ndarray):
         """Function to get the target distance in cm.
