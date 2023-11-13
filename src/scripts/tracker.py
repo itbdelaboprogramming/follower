@@ -148,7 +148,6 @@ class ObjectTracker(object):
         
         This function will return True if the target initiation is success and will return false otherwise.
         """
-        self.image_height, self.image_width, self.image_channels = frame.shape
         return self.tracker.init(frame, bounding_box)
 
     def update(self, frame: np.ndarray):
@@ -203,7 +202,6 @@ class ObjectTracker(object):
                 [x1, y1] = corners[0][0][0]
                 [x2, y2] = corners[0][0][2]
                 self.target_bounding_box = [x1, y1, x2 - x1, y2 - y1]
-                self.image_height, self.image_width, self.image_channels = frame.shape
                 aruco.drawDetectedMarkers(frame, corners, ids)
                 cx, cy = self.get_target_center()
                 cv2.circle(frame, (cx,cy), 5, (255,0,0), 1)
@@ -233,6 +231,7 @@ class ObjectTracker(object):
          frame: input frame from camera.
          net: DarknetDNN object for object detection.
         """
+        self.image_height, self.image_width, self.image_channels = frame.shape
         if not self.tracking_flag:
             self.not_tracking(frame, net)
         else:
@@ -246,6 +245,7 @@ class ObjectTracker(object):
          net: DarknetDNN object for object detection.
          duration: time length before detection algorithm is re executed.
         """
+        self.image_height, self.image_width, self.image_channels = frame.shape
         current_time = tm.time()
         elapsed_time = current_time - self.tracking_time
         self.frame_height, self.frame_width, _ = frame.shape
