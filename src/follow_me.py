@@ -128,8 +128,6 @@ while not rospy.is_shutdown():
     else:
         distance = msg.target_distance
 
-    print(tracker.get_target_center(), "->", move_position, "->", cam_position)
-
     vel = Twist()
     if distance is not None:
         vel.linear.x = max(min(0.4*round((tgt_stop_dist-distance)/10)*10, max_speed), -max_speed) #round the distance error into 10^1 cm order then multiplies it by a proportional factor of 0.4, then constraint it into [-max_speed, max_speed]
@@ -143,13 +141,16 @@ while not rospy.is_shutdown():
     elif move_position == 'Left':
         msg.target_position = 2
         vel.angular.z = -max_turn
-    elif move_position == 'Center' and distance <= tgt_stop_dist:
+    elif move_position == 'Center' and distance > tgt_stop_dist:
         msg.target_position = 3
         vel.angular.z = 0.0
     else:
         msg.target_position = 0
         vel.linear.x = 0.0
         vel.angular.z = 0.0
+        move_position = 'Hold'
+    
+    print(tracker.get_target_center(), "->", move_position, "->", cam_position)
     
     # camera command
     if cam_position == 'Up':
