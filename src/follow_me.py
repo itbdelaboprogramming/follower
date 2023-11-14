@@ -63,11 +63,12 @@ rospy.init_node('follow_me_node')
 target_pub = rospy.Publisher('rover_command', TargetState, queue_size=1)
 vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
 
-# ROS Parameters
+# ROS Parameters (Get rosparams loaded from follower.yaml)
 camera_id = rospy.get_param("/camera_id")
 max_speed = rospy.get_param("/max_speed") 
 max_turn = rospy.get_param("/max_turn") 
-stop_dist = rospy.get_param("/stop_dist") 
+tgt_stop_dist = rospy.get_param("/tgt_stop_dist")
+obs_stop_dist = rospy.get_param("/obs_stop_dist")
 node_frequency  = rospy.get_param("/node_frequency")
 use_aruco = rospy.get_param("/use_aruco") 
 camera_fps = rospy.get_param("/camera_fps") 
@@ -120,14 +121,18 @@ while not rospy.is_shutdown():
     msg.target_distance = -1.0
     msg.target_position = 0
 
-    move_position, cam_position = tracker.get_target_position(depth, stop_dist)
+    move_position, cam_position = tracker.get_target_position(depth, obs_stop_dist)
     distance = tracker.get_target_distance(depth)
+    if distance is not None:
+        msg.target_distance = distance
+    else:
+        distance = msg.target_distance
 
     print(tracker.get_target_center(), "->", move_position, "->", cam_position)
 
     vel = Twist()
     if distance is not None:
-        vel.linear.x = max(min(0.4*round((stop_dist-distance)/10)*10, max_speed), -max_speed) #round the distance error into 10^1 cm order then multiplies it by a proportional factor of 0.4, then constraint it into [-max_speed, max_speed]
+        vel.linear.x = max(min(0.4*round((tgt_stop_dist-distance)/10)*10, max_speed), -max_speed) #round the distance error into 10^1 cm order then multiplies it by a proportional factor of 0.4, then constraint it into [-max_speed, max_speed]
     else:
         vel.linear.x = 0.0
 
@@ -138,7 +143,7 @@ while not rospy.is_shutdown():
     elif move_position == 'Left':
         msg.target_position = 2
         vel.angular.z = -max_turn
-    elif move_position == 'Center':
+    elif move_position == 'Center' and distance <= tgt_stop_dist:
         msg.target_position = 3
         vel.angular.z = 0.0
     else:
@@ -153,10 +158,6 @@ while not rospy.is_shutdown():
         msg.cam_angle_command = 2
     else:
         msg.cam_angle_command = 0
-    
-    # distnce info
-    if distance is not None:
-        msg.target_distance = distance
     
     #rospy.loginfo(msg, tracker.get_target_center(), position)
     target_pub.publish(msg)

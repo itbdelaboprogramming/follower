@@ -270,7 +270,7 @@ class ObjectTracker(object):
         else:
             return None, None
         
-    def get_target_position(self, depth: np.ndarray, threshold: float):
+    def get_target_position(self, depth: np.ndarray, obs_threshold: float):
         """Function to get target position. Image is divided into 3 sector in x axis. If the target is on the Left, Center or Right it will return String with that sector, else it will return 'Hold'.
             @param:
             depth: depth image from IntelRealsense in np.ndarray format 
@@ -278,15 +278,15 @@ class ObjectTracker(object):
             threshold: stop threshold value in meter
         """
         cx, cy = self.get_target_center()
-        obj_left, obj_center, obj_right = self.is_object_within_threshold(depth, threshold)
+        obs_left, obs_center, obs_right = self.is_obstacle_within_threshold(depth, obs_threshold)
         if cx is None:
             move_cmd = 'Hold'
         else:
-            if cx <= self.image_width/3 and not obj_left:
+            if cx <= self.image_width/3 and not obs_left:
                 move_cmd = 'Left'
-            elif cx >= 2 * self.image_width/3 and not obj_right:
+            elif cx >= 2 * self.image_width/3 and not obs_right:
                 move_cmd = 'Right'
-            elif not obj_center:
+            elif not obs_center and not obs_left and not obs_right:
                 move_cmd = 'Center'
             else:
                 move_cmd = 'Hold'
@@ -327,7 +327,7 @@ class ObjectTracker(object):
             """
             return distance
     
-    def is_object_within_threshold(self, depth: np.ndarray, threshold: float):
+    def is_obstacle_within_threshold(self, depth: np.ndarray, threshold: float):
         """Function to check if there is an obstacle within threshold.
         @param:
          depth: depth image from IntelRealsense in np.ndarray format 
