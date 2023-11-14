@@ -93,6 +93,8 @@ Overall, this code facilitates real-time robot control through ROS and RC input,
 
 // SERVO
 #define CAM_SERVO 2
+#define MAX_SERVO_POS 175
+#define MIN_SERVO_POS 125
 
 // ARMED and DISARMED
 #define ARMED    0x00
@@ -105,11 +107,12 @@ Overall, this code facilitates real-time robot control through ROS and RC input,
 ros::NodeHandle nh;
 
 Servo camServo;
-int servo_pos = 150;
+int servo_pos = MAX_SERVO_POS;
 
 // Varible for target position and distaance
 uint16_t target_position_ = 0;
 float target_distance_ = -1;
+uint16_t cam_angle_command_ = 0;
 
 RC_Receiver receiver(RC_CH1, RC_CH2, RC_CH3, RC_CH4, RC_CH5);
 uint16_t pwm_in[RC_CH_COUNT + 1]; // this array starts from 1
@@ -120,6 +123,7 @@ int16_t  pwm_r = 0, pwm_l = 0, failsafe = DISARMED;
 void callback_function( const follower::TargetState& msg){
   target_position_ = msg.target_position;
   target_distance_ = msg.target_distance;
+  cam_angle_command_ = msg.cam_angle_command;
 }
 
 // Create subscriber for target info
@@ -316,18 +320,46 @@ void update_cmd(){
 }
 
 void write_servo(){
-  if (pwm_in[5] >= 980 && pwm_in[5] <= 2020){
-    servo_pos = map(pwm_in[5], 980, 2020, 130, 170);
-    camServo.write(servo_pos);
-  } else if (pwm_in[5] > 2020) {
-    // most up cam position
-    servo_pos = 175;
-    camServo.write(servo_pos);
-  } else {
-    // most straight cam position
-    servo_pos = 125;
-    camServo.write(servo_pos);
+  // RC mode
+  if (pwm_in[3] < 1600) {
+    if (pwm_in[5] >= 980 && pwm_in[5] <= 2020){
+      servo_pos = map(pwm_in[5], 980, 2020, MIN_SERVO_POS + 5, MAX_SERVO_POS - 5);
+      camServo.write(servo_pos);
+    } else if (pwm_in[5] > 2020) {
+      // most up cam position
+      servo_pos = MAX_SERVO_POS;
+      camServo.write(servo_pos);
+    } else {
+      // most straight cam position
+      servo_pos = MIN_SERVO_POS;
+      camServo.write(servo_pos);
+    }
   }
+  // PC Mode (Auto)
+  else {
+    if (cam_angle_command_ == 1 && servo_pos < MAX_SERVO_POS) {
+      // Up
+      servo_pos += 1;
+      camServo.write(servo_pos);
+    }
+    else if (cam_angle_command_ == 2 && servo_pos > MIN_SERVO_POS) {
+      // Down
+      servo_pos -= 1;
+      camServo.write(servo_pos);
+    }
+  }
+  // if (pwm_in[5] >= 980 && pwm_in[5] <= 2020){
+  //   servo_pos = map(pwm_in[5], 980, 2020, 130, 170);
+  //   camServo.write(servo_pos);
+  // } else if (pwm_in[5] > 2020) {
+  //   // most up cam position
+  //   servo_pos = 175;
+  //   camServo.write(servo_pos);
+  // } else {
+  //   // most straight cam position
+  //   servo_pos = 125;
+  //   camServo.write(servo_pos);
+  // }
 }
 
 void write_motor(){
