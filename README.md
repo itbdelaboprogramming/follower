@@ -221,9 +221,13 @@ rostopic echo /rover_command
 
 5.2 Launch the whole program after uploading this [code](./arduino/test_custom_ros_msg/test_custom_ros_msg.ino) to the arduino board.
 
-Launch the node by run this command in terminal.
+Launch the node by run this command in terminal (without camera view).
 ``` bash
 roslaunch follower follower.launch
+```
+Launch the node by run this command in terminal (with camera view).
+``` bash
+roslaunch follower debug.launch
 ```
 
 # Important! Read more!
