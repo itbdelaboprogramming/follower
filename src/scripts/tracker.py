@@ -304,7 +304,7 @@ class ObjectTracker(object):
         return move_cmd, cam_angle_cmd
         
     def get_target_distance(self, depth: np.ndarray):
-        """Function to get the target distance in cm.
+        """Function to get the target distance in m.
         @param:
          depth: depth image from IntelRealsense in np.ndarray format
         """
@@ -317,10 +317,10 @@ class ObjectTracker(object):
             return None
         else:
             
-            distance = depth[cy, cx]/10
+            distance = depth[cy, cx]/1000
             """
             try:
-                distance = depth[cy, cx]/10
+                distance = depth[cy, cx]/1000
             except BaseException as e:
                 print(e)
                 pass

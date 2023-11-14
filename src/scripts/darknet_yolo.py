@@ -305,7 +305,7 @@ class DarknetDNN:
             return 'Center'
         
     def get_target_distance(self, depth: np.ndarray):
-        """Function to get the target distance in cm.
+        """Function to get the target distance in m.
         @param:
          depth: depth image from IntelRealsense in np.ndarray format
         """
@@ -313,7 +313,7 @@ class DarknetDNN:
             return None
         else:
             cx, cy = self.get_target_center()
-            return round(depth[cy, cx]/10)
+            return round(depth[cy, cx]/1000)
         
     def show_target(self, image: np.ndarray, info: bool = False):
         """Method to show all the detected object and target info onto the frame.
