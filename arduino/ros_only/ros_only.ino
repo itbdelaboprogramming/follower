@@ -26,12 +26,13 @@ ros::NodeHandle nh;
 // Varible for target position and distaance
 uint8_t target_position_ = 0;
 uint8_t cam_angle_command_ = 0;
-
+float target_distance_ = 0.0;
 int16_t  pwm_r = 0, pwm_l = 0;
 
 // Callback function that handles data subscribing
 void callback_function(const follower::TargetState& msg){
   target_position_ = msg.target_position;
+  target_distance_ = msg.target_distance;
   cam_angle_command_ = msg.cam_angle_command;
 }
 
