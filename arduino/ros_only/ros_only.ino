@@ -91,7 +91,7 @@ void loop() {
   write_motor();
   
   nh.spinOnce();
-  delay(1);
+  delay(25); //40 Hz
 }
 
 void update_cmd(){
