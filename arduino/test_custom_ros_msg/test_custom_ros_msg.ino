@@ -351,18 +351,6 @@ void write_servo(){
       camServo.write(servo_pos);
     }
   }
-  // if (pwm_in[5] >= 980 && pwm_in[5] <= 2020){
-  //   servo_pos = map(pwm_in[5], 980, 2020, 130, 170);
-  //   camServo.write(servo_pos);
-  // } else if (pwm_in[5] > 2020) {
-  //   // most up cam position
-  //   servo_pos = 175;
-  //   camServo.write(servo_pos);
-  // } else {
-  //   // most straight cam position
-  //   servo_pos = 125;
-  //   camServo.write(servo_pos);
-  // }
 }
 
 void write_motor(){
