@@ -340,12 +340,14 @@ void write_servo(){
   else {
     if (cam_angle_command_ == 1) {
       // Up
-      servo_pos = min(servo_pos + INCREMENT_POS, MAX_SERVO_POS);
+      servo_pos = servo_pos + INCREMENT_POS;
+      servo_pos = min(servo_pos, MAX_SERVO_POS);
       camServo.write(servo_pos);
     }
     else if (cam_angle_command_ == 2) {
       // Down
-      servo_pos = max(servo_pos - INCREMENT_POS, MIN_SERVO_POS);
+      servo_pos = servo_pos - INCREMENT_POS;
+      servo_pos = max(servo_pos, MIN_SERVO_POS);
       camServo.write(servo_pos);
     }
   }
