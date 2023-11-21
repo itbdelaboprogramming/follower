@@ -213,6 +213,7 @@ void setup() {
   digitalWrite(MTR_ACT, HIGH);
 
   camServo.attach(CAM_SERVO);
+  camServo.write(servo_pos);
 }
 
 void loop() {
