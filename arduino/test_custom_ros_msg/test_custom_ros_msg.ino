@@ -95,6 +95,7 @@ Overall, this code facilitates real-time robot control through ROS and RC input,
 #define CAM_SERVO 2
 #define MAX_SERVO_POS 175
 #define MIN_SERVO_POS 125
+#define INCREMENT_POS 10
 
 // ARMED and DISARMED
 #define ARMED    0x00
@@ -337,14 +338,14 @@ void write_servo(){
   }
   // PC Mode (Auto)
   else {
-    if (cam_angle_command_ == 1 && servo_pos < MAX_SERVO_POS) {
+    if (cam_angle_command_ == 1) {
       // Up
-      servo_pos += 1;
+      servo_pos = min(servo_pos + INCREMENT_POS, MAX_SERVO_POS);
       camServo.write(servo_pos);
     }
-    else if (cam_angle_command_ == 2 && servo_pos > MIN_SERVO_POS) {
+    else if (cam_angle_command_ == 2) {
       // Down
-      servo_pos -= 1;
+      servo_pos = max(servo_pos - INCREMENT_POS, MIN_SERVO_POS);
       camServo.write(servo_pos);
     }
   }
