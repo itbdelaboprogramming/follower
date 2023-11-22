@@ -91,8 +91,9 @@ class ObjectTracker(object):
         """
         Create an object tracker from the OpenCV library based on the selected algorithm.
         """
-
         # 4.8.1
+        current_file_dir = os.path.dirname(os.path.realpath(__file__))
+        model_dir = f"{current_file_dir}/model"
         if self.algorithm == 0:
             self.tracker = None
         elif self.algorithm == 1:
@@ -102,19 +103,24 @@ class ObjectTracker(object):
             kernel_r1:   https://www.dropbox.com/s/999cqx5zrfi7w4p/dasiamrpn_kernel_r1.onnx?dl=0
             kernel_cls1: https://www.dropbox.com/s/qvmtszx5h339a0w/dasiamrpn_kernel_cls1.onnx?dl=0
             """
-            current_file_dir = os.path.dirname(os.path.realpath(__file__))
-            onnx_model_dir = f"{current_file_dir}/model"
             params = cv2.TrackerDaSiamRPN_Params()
-            params.model = f"{onnx_model_dir}/dasiamrpn_model.onnx"
-            params.kernel_cls1 = f"{onnx_model_dir}/dasiamrpn_kernel_cls1.onnx"
-            params.kernel_r1 = f"{onnx_model_dir}/dasiamrpn_kernel_r1.onnx"
+            params.model = f"{model_dir}/dasiamrpn_model.onnx"
+            params.kernel_cls1 = f"{model_dir}/dasiamrpn_kernel_cls1.onnx"
+            params.kernel_r1 = f"{model_dir}/dasiamrpn_kernel_r1.onnx"
             self.tracker = cv2.TrackerDaSiamRPN_create(params)
         elif self.algorithm == 2:
             self.tracker = cv2.TrackerCSRT_create()
         elif self.algorithm == 3:
             self.tracker = cv2.TrackerKCF_create()
         elif self.algorithm == 4:
-            self.tracker = cv2.TrackerGOTURN_create()
+            """
+            GOTURN Model download
+            https://github.com/Mogball/goturn-files
+            """
+            params = cv2.TrackerGOTURN_Params()
+            params.modelTxt = f"{model_dir}/goturn.prototxt"
+            params.modelBin = f"{model_dir}/goturn.caffemodel"
+            self.tracker = cv2.TrackerGOTURN_create(params)
         elif self.algorithm == 5:
             self.tracker = cv2.TrackerMIL_create()
         elif self.algorithm == 6:
