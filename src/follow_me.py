@@ -71,13 +71,14 @@ tgt_stop_dist = rospy.get_param("/tgt_stop_dist")
 obs_stop_dist = rospy.get_param("/obs_stop_dist")
 compute_period  = rospy.get_param("/compute_period")
 use_aruco = rospy.get_param("/use_aruco") 
+track_algorithm = rospy.get_param("/track_algorithm")
 camera_fps = rospy.get_param("/camera_fps") 
 use_debug = rospy.get_param("/use_debug", False)
 
 # Initialize Camera and Darknet
 camera = DeviceCamera(camera_id, camera_fps)
 net = DarknetDNN()
-tracker = ObjectTracker(2 and 3, use_aruco)
+tracker = ObjectTracker(track_algorithm, use_aruco)
 #video = cv2.VideoCapture("C:\\Users\\luthf\\Videos\\Captures\\safety_vest_video.mp4")
 
 # Node frequency
