@@ -124,7 +124,10 @@ class ObjectTracker(object):
         elif self.algorithm == 5:
             self.tracker = cv2.TrackerMIL_create()
         elif self.algorithm == 6:
-            self.tracker = cv2.TrackerNano_create()
+            params = cv2.TrackerNano_Params()
+            params.backbone = f"{model_dir}/nanotrack_backbone_sim.onnx"
+            params.neckhead = f"{model_dir}/nanotrack_head_sim.onnx"
+            self.tracker = cv2.TrackerNano_create(params)
         else:
             self.tracker = None
 
