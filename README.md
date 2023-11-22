@@ -30,21 +30,24 @@ After installing `rosserial` for our machine, we installed `rosserial` arduino l
 # How to Use
 
 ## 1. Setup the ROS Package
-
-1. Go to your local ROS workspace. For example:
+1. Install Git LFS (Large File Storage) for downloading ML model files (large file):
+```bash
+sudo apt install git-lfs
+```
+2. Go to your local ROS workspace. For example:
 ``` bash
 cd ~/catkin_ws/src
 ```
-2. Clone the repository.
+3. Clone the repository.
 Ps. Delete the home folder. It contains [libuvc_installation.sh](./home/libuvc_installation.sh) file for building the SDK without kernel patching.
 ``` bash
 git clone https://github.com/itbdelaboprogramming/follower.git
 ```
-3. Go to
+4. Go to
 ```bash
 cd ~/catkin_ws
 ```
-4. Make the ROS workspace, type `catkin_make` into the terminal and run it.
+5. Make the ROS workspace, type `catkin_make` into the terminal and run it.
 ``` bash
 catkin_make
 ```
