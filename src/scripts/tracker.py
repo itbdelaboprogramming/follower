@@ -3,6 +3,7 @@ import numpy as np
 import time as tm
 from darknet_yolo import DarknetDNN
 import cv2.aruco as aruco
+import os
 
 """
 Real-Time Object Tracking with ObjectTracker and DarknetDNN
@@ -95,7 +96,19 @@ class ObjectTracker(object):
         if self.algorithm == 0:
             self.tracker = None
         elif self.algorithm == 1:
-            self.tracker = cv2.TrackerDaSiamRPN_create()
+            """
+            ONNX Model download
+            network:     https://www.dropbox.com/s/rr1lk9355vzolqv/dasiamrpn_model.onnx?dl=0
+            kernel_r1:   https://www.dropbox.com/s/999cqx5zrfi7w4p/dasiamrpn_kernel_r1.onnx?dl=0
+            kernel_cls1: https://www.dropbox.com/s/qvmtszx5h339a0w/dasiamrpn_kernel_cls1.onnx?dl=0
+            """
+            current_file_dir = os.path.dirname(os.path.realpath(__file__))
+            onnx_model_dir = f"{current_file_dir}/model"
+            params = cv2.TrackerDaSiamRPN_Params()
+            params.model = f"{onnx_model_dir}/dasiamrpn_model.onnx"
+            params.kernel_cls1 = f"{onnx_model_dir}/dasiamrpn_kernel_cls1.onnx"
+            params.kernel_r1 = f"{onnx_model_dir}/dasiamrpn_kernel_r1.onnx"
+            self.tracker = cv2.TrackerDaSiamRPN_create(params)
         elif self.algorithm == 2:
             self.tracker = cv2.TrackerCSRT_create()
         elif self.algorithm == 3:
