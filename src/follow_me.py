@@ -69,7 +69,7 @@ max_speed = rospy.get_param("/max_speed")
 max_turn = rospy.get_param("/max_turn") 
 tgt_stop_dist = rospy.get_param("/tgt_stop_dist")
 obs_stop_dist = rospy.get_param("/obs_stop_dist")
-node_frequency  = rospy.get_param("/node_frequency")
+compute_period  = rospy.get_param("/compute_period")
 use_aruco = rospy.get_param("/use_aruco") 
 camera_fps = rospy.get_param("/camera_fps") 
 use_debug = rospy.get_param("/use_debug", False)
@@ -81,7 +81,8 @@ tracker = ObjectTracker(2 and 3, use_aruco)
 #video = cv2.VideoCapture("C:\\Users\\luthf\\Videos\\Captures\\safety_vest_video.mp4")
 
 # Node frequency
-rate = rospy.Rate(node_frequency) 
+frequency = (1/compute_period) * 1000
+rate = rospy.Rate(frequency) 
 
 # Set HSV color range and color threshold for object detection
 low_hsv = np.array([0, 221, 102], dtype=np.uint8)
