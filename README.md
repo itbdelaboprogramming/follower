@@ -51,6 +51,13 @@ cd ~/catkin_ws
 ``` bash
 catkin_make
 ```
+6. GitHub max file size is limited to 100 MB. To add large file into Git LFS, use this command on your terminal:
+```bash
+# command format
+git lfs track "*.<file_extension>"
+# for example track all *.bin files into Git LFS
+git lfs track "*.bin"
+```
 
 ## 2. Setup the Arduino Board
 
