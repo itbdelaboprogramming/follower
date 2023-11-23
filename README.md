@@ -314,6 +314,4 @@ Initializes a ROS node named `follow_me_node` for this module to interact within
 `cmd_vel`: Provides velocity control commands for the rover. Messages of type `Twist` are published on this topic.
 
 ### Parameters:
-`max_speed`: Represents the maximum linear speed of the rover. (float, Default value: 1.0 m/s)
-`max_turn`: Defines the maximum turning rate of the rover. (float, Default value: 0.8 rad/s)
-`target_dist`: Specifies a target distance parameter, likely related to the rover's behavior. (float, Default value: 2.0 meters)
+All robot parameters are defined in `/config/follower.yaml`. Please refer to the file for more information.

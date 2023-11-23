@@ -22,6 +22,9 @@ Libraries:
 - The script imports necessary libraries, including OpenCV for computer vision tasks, NumPy for numerical operations, and ROS for robot control.
 - Custom modules from the "scripts" directory are imported, including "DeviceCamera" for camera handling, "DarknetDNN" for YOLO detection, and "ObjectTracker" for object tracking.
 
+Parameters:
+- All robot params are defined in the follower.yaml file inside /config directory
+
 ROS Node Initialization:
 - The script initializes a ROS node named 'follow_me_node' for communication and control.
 - ROS publishers ("target_pub" and "vel_pub") are created to send robot commands.
