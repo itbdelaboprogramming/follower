@@ -67,6 +67,12 @@ rospy.init_node('follow_me_node')
 target_pub = rospy.Publisher('rover_command', TargetState, queue_size=1)
 vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
 
+# Create ROS Subscribers
+def hardware_state_callback(msg):
+    #TODO: implement callback logic
+    pass
+hardware_state_sub = rospy.Subscriber('hardware_state', HardwareState, hardware_state_callback)
+
 # ROS Parameters (Get rosparams loaded from follower.yaml)
 camera_id = rospy.get_param("/camera_id")
 camera_fps = rospy.get_param("/camera_fps")
