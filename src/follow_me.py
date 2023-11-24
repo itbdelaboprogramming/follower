@@ -10,6 +10,7 @@ import time
 
 import rospy
 from follower.msg import TargetState
+from follower.msg import HardwareState
 from geometry_msgs.msg import Twist
 
 """
