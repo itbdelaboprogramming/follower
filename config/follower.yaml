@@ -7,4 +7,5 @@ tgt_stop_dist: 1.0        # m, stop distance threshold for target to follow, def
 obs_stop_dist: 0.5        # m, stop distance threshold for nearby obstacles, default is 0.5 m
 compute_period: 25        # ms, (jetson max realsense fps is ~40 fps = 25 ms) --> for color detection set to 33 ms
 use_aruco: true           # set false to use person & color detection
+aruco_id: 0               # aruco id to follow, dictionary: Original Aruco, default id 0
 track_algorithm: 6        # default 6 (Nano) best performance, algorithm number for non-aruco tracking, 0: None, 1: DaSiamRPN, 2: CSRT, 3: KCF, 4: GOTURN, 5: MIL, 6: Nano

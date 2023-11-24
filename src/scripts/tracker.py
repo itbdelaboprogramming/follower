@@ -62,7 +62,7 @@ Overall, this code exemplifies the implementation of real-time object tracking b
 
 
 class ObjectTracker(object):
-    def __init__(self, algorithm: int = 0, use_aruco: bool = False):
+    def __init__(self, algorithm: int = 0, use_aruco: bool = False, aruco_id: int = 0):
         """
         Initialize an object tracker with various tracking algorithms.
 
@@ -85,6 +85,7 @@ class ObjectTracker(object):
         self.frame_height = None
         self.frame_width = None
         self.use_aruco = use_aruco
+        self.aruco_id = aruco_id
         self.aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
     
     def create(self):
@@ -200,7 +201,7 @@ class ObjectTracker(object):
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             corners, ids, rejected = aruco.detectMarkers(gray, self.aruco_dict)
             if ids is not None:
-                self.tracking_flag = True
+                self.tracking_flag = True if [self.aruco_id] in ids else False
         else:
             self.create()
             net.detect_object(frame, 0)
@@ -224,9 +225,10 @@ class ObjectTracker(object):
         if self.use_aruco:
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             corners, ids, rejected = aruco.detectMarkers(gray, self.aruco_dict)
-            if ids is not None:
-                [x1, y1] = corners[0][0][0]
-                [x2, y2] = corners[0][0][2]
+            if ids is not None and [self.aruco_id] in ids:
+                idx = np.where(ids == self.aruco_id)[0][0]
+                [x1, y1] = corners[idx][0][0]
+                [x2, y2] = corners[idx][0][2]
                 self.target_bounding_box = [x1, y1, x2 - x1, y2 - y1]
                 aruco.drawDetectedMarkers(frame, corners, ids)
                 cx, cy = self.get_target_center()
