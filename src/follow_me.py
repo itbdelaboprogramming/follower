@@ -9,7 +9,7 @@ import numpy as np
 import time
 
 import rospy
-from follower.msg import TargetState
+from follower.msg import HardwareCommand
 from follower.msg import HardwareState
 from geometry_msgs.msg import Twist
 
@@ -64,7 +64,7 @@ Overall, this code integrates object tracking with robot control through ROS, en
 rospy.init_node('follow_me_node')
 
 # Create ROS Publishers
-target_pub = rospy.Publisher('rover_command', TargetState, queue_size=1)
+target_pub = rospy.Publisher('rover_command', HardwareCommand, queue_size=1)
 vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
 
 # Create ROS Subscribers
@@ -131,16 +131,12 @@ while not rospy.is_shutdown():
     #print(tracker.get_target_position())
 
     # Publish the command
-    msg = TargetState()
-    msg.target_distance = -1.0
-    msg.target_position = 0
+    msg = HardwareCommand()
+    msg.movement_command = 0
 
     move_position, cam_position = tracker.get_target_position(depth, obs_stop_dist)
     distance = tracker.get_target_distance(depth)
-    if distance is not None:
-        msg.target_distance = distance
-    else:
-        distance = msg.target_distance
+    distance = distance if distance is not None else -1.0
 
     vel = Twist()
     if distance is not None:
@@ -150,16 +146,16 @@ while not rospy.is_shutdown():
 
     # move command
     if move_position == 'Right':
-        msg.target_position = 1
+        msg.movement_command = 1
         vel.angular.z = max_turn
     elif move_position == 'Left':
-        msg.target_position = 2
+        msg.movement_command = 2
         vel.angular.z = -max_turn
     elif move_position == 'Center' and distance > tgt_stop_dist:
-        msg.target_position = 3
+        msg.movement_command = 3
         vel.angular.z = 0.0
     else:
-        msg.target_position = 0
+        msg.movement_command = 0
         vel.linear.x = 0.0
         vel.angular.z = 0.0
         move_position = 'Hold'

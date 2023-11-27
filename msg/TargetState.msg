@@ -1,3 +1,0 @@
-uint8 target_position
-float32 target_distance
-uint8 cam_angle_command
