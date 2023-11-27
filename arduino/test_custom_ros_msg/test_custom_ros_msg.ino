@@ -1,7 +1,7 @@
 #include <Servo.h>
 
 #include <ros.h>
-#include <follower/TargetState.h>
+#include <follower/HardwareCommand.h>
 #include <std_msgs/String.h>
 #include <std_msgs/Float32.h>
 
@@ -28,17 +28,9 @@ Callback Function:
 - A callback function handles target state messages received from ROS.
 - Target position and distance are updated based on the received data.
 
-Debugging Publisher (Optional):
-- If the DEBUG macro is defined, ROS publishers for debugging are created.
-- Debugging data, including target position and distance, can be published for monitoring.
-
 Message Format:
 - The script defines a message format to control the robot's behavior.
 - Messages consist of two characters, indicating actions like rotating left (L), rotating right (R), moving forward (G), holding position (H), or stopping (S).
-
-Timing and Periodic Logging:
-- The script tracks timing intervals for periodic logging.
-- Debugging and distance information are logged at specified intervals.
 
 RC Input Handling:
 - The script processes RC input channels and applies PWM offsets.
@@ -57,7 +49,7 @@ Setup:
 - The script initializes ROS, motor pins, LEDs, and other configurations during setup.
 
 Loop:
-- In the main loop, the script continuously processes RC input, updates robot commands, writes motor signals, and logs data for debugging.
+- In the main loop, the script continuously processes RC input, updates robot commands, writes motor signals.
 - Target position and distance influence robot behavior.
 
 Overall, this code facilitates real-time robot control through ROS and RC input, making it suitable for remote-controlled robotic applications.
@@ -101,9 +93,6 @@ Overall, this code facilitates real-time robot control through ROS and RC input,
 #define ARMED    0x00
 #define DISARMED 0x01
 
-// Uncomment line below to activate publisher to debugging
-// #define DEBUG
-
 // Define Node Handler
 ros::NodeHandle nh;
 
@@ -111,9 +100,8 @@ Servo camServo;
 int servo_pos = MAX_SERVO_POS;
 
 // Varible for target position and distaance
-uint16_t target_position_ = 0;
-float target_distance_ = -1;
-uint16_t cam_angle_command_ = 0;
+uint8_t movement_command_ = 0;
+uint8_t cam_angle_command_ = 0;
 
 RC_Receiver receiver(RC_CH1, RC_CH2, RC_CH3, RC_CH4, RC_CH5);
 uint16_t pwm_in[RC_CH_COUNT + 1]; // this array starts from 1
@@ -121,22 +109,14 @@ long int pwm_offset[] = {0, 9, 18, 9, 9, 9}; // this array starts from 1
 int16_t  pwm_r = 0, pwm_l = 0, failsafe = DISARMED;
 
 // Callback function that handles data subscribing
-void callback_function( const follower::TargetState& msg){
-  target_position_ = msg.target_position;
-  target_distance_ = msg.target_distance;
+void callback_function( const follower::HardwareCommand& msg){
+  movement_command_ = msg.movement_command;
   cam_angle_command_ = msg.cam_angle_command;
 }
 
 // Create subscriber for target info
-ros::Subscriber<follower::TargetState> sub("rover_command", callback_function);
+ros::Subscriber<follower::HardwareCommand> sub("rover_command", callback_function);
 
-#ifdef DEBUG
-// Create publisher because when using rosserial you can't open serial monitor, so this is for debugging and to print out the value of variable that you want to check. The value will be accessible in ros terminal
-std_msgs::String str_msg;
-std_msgs::Float32 dis_msg;
-ros::Publisher logger("from_arduino", &str_msg);
-ros::Publisher dis_logger("dis_arduino", &dis_msg);
-#endif
 // Set the length of msg you want to send + 1
 /* Example: 
  * L : Left
@@ -155,11 +135,6 @@ unsigned char msg[3] = "HH";
  * If you want to use another data type change the data type of the message accordingly
  * Don't forget to import the data type from std_msgs
  */
-
-
-// For timing purposes
-uint32_t tlast = 0;
-uint32_t period = 200;
 
 void rotate_left(){
   // Write down the algorithm so the vehicle rotate left
@@ -189,11 +164,6 @@ void setup() {
   // Initializing node
   nh.initNode();
   nh.subscribe(sub);
-
-  #ifdef DEBUG
-  nh.advertise(logger);
-  nh.advertise(dis_logger);
-  #endif
 
   // Write the rest of setup() code below
   pinMode(MTL_ACT, OUTPUT);
@@ -229,28 +199,6 @@ void loop() {
 
   // Write to motor
   write_motor();
-  /*=============*/
-
-  // Only for testing
-  if (target_distance_ <= 100){
-    msg[1] = 'S';
-  } else {
-    msg[1] = 'G';
-  }
-
-  /*==============*/
-
-  // Here is an example of logging: to log data, you can convert the data into a char array (String) and provide the length of the data.
-  if (millis() - tlast >= period){
-    #ifdef DEBUG
-    str_msg.data = msg;
-    dis_msg.data = target_distance_;
-    logger.publish(&str_msg);
-    dis_logger.publish(&dis_msg);
-    #endif
-    tlast = millis();
-  }
-  
   
   nh.spinOnce();
   delay(1);
@@ -300,13 +248,13 @@ void update_cmd(){
       digitalWrite(BLUE_LED, HIGH);
     } else {
       // Part to control vehicle heading based on the target position
-      if (target_position_ == 1){
+      if (movement_command_== 1){
         rotate_left();
         msg[0] = 'L';
-      } else if (target_position_ == 2){
+      } else if (movement_command_== 2){
         rotate_right();
         msg[0] = 'R';
-      } else if (target_position_ == 3){
+      } else if (movement_command_== 3){
         move_forward();
         msg[0] = 'C';
       } else {
