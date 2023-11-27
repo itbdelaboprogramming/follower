@@ -17,7 +17,8 @@ from geometry_msgs.msg import Twist
 Real-Time Object Tracking with ROS and YOLO Detection
 
 Overview:
-This Python script combines real-time object tracking with ROS (Robot Operating System) and YOLO (You Only Look Once) detection. It enables a robot to follow objects based on YOLO object detection results.
+This Python script combines real-time object tracking with ROS (Robot Operating System), Aruco sign detection, and YOLO (You Only Look Once) detection. 
+It enables a robot to follow objects based on the detected objects (Aruco sign or YOLO person & color).
 
 Libraries:
 - The script imports necessary libraries, including OpenCV for computer vision tasks, NumPy for numerical operations, and ROS for robot control.
@@ -28,7 +29,8 @@ Parameters:
 
 ROS Node Initialization:
 - The script initializes a ROS node named 'follow_me_node' for communication and control.
-- ROS publishers ("target_pub" and "vel_pub") are created to send robot commands.
+- ROS publishers ("hardware_command_pub" and "vel_pub") are created to send robot commands.
+- ROS subscriber "hardware_state_sub" is created to receive robot hardware state from Arduino.
 
 Robot Control Parameters:
 - Parameters such as "max_speed," "max_turn," and "target_dist" are set to configure robot movement.
@@ -45,18 +47,18 @@ Main Loop:
 Robot Control:
 - Robot control commands are published based on the object's position and distance.
 - The robot can adjust its linear and angular velocities to follow the target.
-- Control commands are published at a specified frequency.
+- Control commands are published at a specified compute period rate each loop.
 
 User Interaction:
 - The processed video frame is displayed with object tracking results.
-- The program can be exited by pressing 'q' or the 'Esc' key.
+- For enabled debug: The program can be exited by pressing 'q' or the 'Esc' key.
 
 Camera Handling and Object Tracking:
 - Camera initialization, frame retrieval, and object tracking are handled using the "DeviceCamera" and "ObjectTracker" classes.
 - The "DarknetDNN" class is used for YOLO object detection.
 - The script communicates with ROS to control the robot's movements based on object tracking.
 
-Overall, this code integrates object tracking with robot control through ROS, enabling a robot to follow objects detected by the YOLO model.
+Overall, this code integrates object tracking with robot control through ROS, enabling a robot to follow objects detected by Aruco detector or YOLO model.
 """
 
 
@@ -64,7 +66,7 @@ Overall, this code integrates object tracking with robot control through ROS, en
 rospy.init_node('follow_me_node')
 
 # Create ROS Publishers
-target_pub = rospy.Publisher('rover_command', HardwareCommand, queue_size=1)
+hardware_command_pub = rospy.Publisher('hardware_command', HardwareCommand, queue_size=1)
 vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
 
 # Create ROS Subscribers
@@ -171,7 +173,7 @@ while not rospy.is_shutdown():
         msg.cam_angle_command = 0
     
     #rospy.loginfo(msg, tracker.get_target_center(), position)
-    target_pub.publish(msg)
+    hardware_command_pub.publish(msg)
     vel_pub.publish(vel)
     
     if (use_debug):

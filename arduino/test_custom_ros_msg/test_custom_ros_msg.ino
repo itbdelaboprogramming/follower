@@ -115,7 +115,7 @@ void callback_function( const follower::HardwareCommand& msg){
 }
 
 // Create subscriber for target info
-ros::Subscriber<follower::HardwareCommand> sub("rover_command", callback_function);
+ros::Subscriber<follower::HardwareCommand> sub("hardware_command", callback_function);
 
 // Set the length of msg you want to send + 1
 /* Example: 

@@ -99,7 +99,7 @@ class ObjectTracker(object):
             self.tracker = None
         elif self.algorithm == 1:
             """
-            ONNX Model download
+            DaSiamRPN ONNX Model download
             network:     https://www.dropbox.com/s/rr1lk9355vzolqv/dasiamrpn_model.onnx?dl=0
             kernel_r1:   https://www.dropbox.com/s/999cqx5zrfi7w4p/dasiamrpn_kernel_r1.onnx?dl=0
             kernel_cls1: https://www.dropbox.com/s/qvmtszx5h339a0w/dasiamrpn_kernel_cls1.onnx?dl=0
@@ -126,7 +126,7 @@ class ObjectTracker(object):
             self.tracker = cv2.TrackerMIL_create()
         elif self.algorithm == 6:
             """
-            ONNX Model download
+            NanoTrack ONNX Model download
             https://github.com/HonglinChu/SiamTrackers/tree/master/NanoTrack/models/nanotrackv2
             """
             params = cv2.TrackerNano_Params()
@@ -299,11 +299,13 @@ class ObjectTracker(object):
             return None, None
         
     def get_target_position(self, depth: np.ndarray, obs_threshold: float):
-        """Function to get target position. Image is divided into 3 sector in x axis. If the target is on the Left, Center or Right it will return String with that sector, else it will return 'Hold'.
+        """Function to get target position. Image is divided into 3 sector in x axis. 
+           If the target is on the Left, Center or Right it will return move command (string) with that sector, else it will return 'Hold'.
+           If the target is on the Top or Bottom it will return cam angle command (string) with that sector, else it will return 'Hold'.
             @param:
             depth: depth image from IntelRealsense in np.ndarray format 
                     (each element is in mm)
-            threshold: stop threshold value in meter
+            obs_threshold: obstacle stop threshold value in meter
         """
         cx, cy = self.get_target_center()
         obs_left, obs_center, obs_right = self.is_obstacle_within_threshold(depth, obs_threshold)
@@ -361,6 +363,12 @@ class ObjectTracker(object):
          depth: depth image from IntelRealsense in np.ndarray format 
                 (each element is in mm)
          threshold: stop threshold value in meter
+        @variable:
+          pixel_list: [[x,y], [x,y], ...] with x and y as image coordinate that has depth value within threshold
+          pixel_list[:, 0]: list of x coordinate
+          obj_left: True if there is an object on the left (1/3 left of the image)
+          obj_center: True if there is an object on the center (1/3 center of the image)
+          obj_right: True if there is an object on the right (1/3 right of the image)
         @return:
             bool, bool, bool --> (obj on left, obj on center, obj on right)
         """
@@ -369,7 +377,7 @@ class ObjectTracker(object):
             indexes = np.where((depth > 0.0) & (depth <= threshold_mm))
             row_indexes, col_indexes = indexes
             if len(row_indexes) > 0 and len(col_indexes) > 0:
-                pixel_list = np.column_stack((col_indexes, row_indexes)) # --> [[x,y], [x,y], ...]
+                pixel_list = np.column_stack((col_indexes, row_indexes))
                 obj_left = np.any(pixel_list[:, 0] < self.image_width/3)
                 obj_center = np.any((pixel_list[:, 0] >= self.image_width/3) & (pixel_list[:, 0] <= 2 * self.image_width/3))
                 obj_right = np.any(pixel_list[:, 0] > 2 * self.image_width/3)
