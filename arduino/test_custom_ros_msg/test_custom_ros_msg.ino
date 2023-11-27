@@ -11,22 +11,24 @@
 Real-Time Robot Control with ROS and Remote Control Receiver
 
 Overview:
-This Arduino script enables real-time control of a robot using a Remote Control (RC) receiver. It integrates with ROS (Robot Operating System) for communication and control. The script listens to RC input channels, manages motor control, and responds to target state information from ROS.
+This Arduino script enables real-time control of a robot using a Remote Control (RC) receiver. 
+It integrates with ROS (Robot Operating System) for communication and control. 
+The script listens to RC input channels, manages motor control, and responds to hardware command information from ROS.
 
 Libraries and Constants:
 - The script includes various libraries for ROS communication, RC receiver, and motor control.
 - Constants are defined for RC channels, motor parameters, LEDs, and armed/disarmed states.
 
 ROS Node Initialization:
-- The script initializes a ROS node for communication and subscribes to target state information.
+- The script initializes a ROS node for communication and subscribes to hardware command information.
 
 RC Receiver Initialization:
 - The RC receiver is configured with RC channel assignments and PWM offsets.
 - PWM input values are stored in an array for processing.
 
 Callback Function:
-- A callback function handles target state messages received from ROS.
-- Target position and distance are updated based on the received data.
+- A callback function handles hardware command messages received from ROS.
+- Movement command and camera angle command are updated based on the received data.
 
 Message Format:
 - The script defines a message format to control the robot's behavior.
@@ -39,7 +41,7 @@ RC Input Handling:
 Command Update:
 - Robot commands are updated based on the RC input.
 - If disarmed, PWM values are set to zero, and LEDs are turned off.
-- In the armed state, motor control commands are determined based on RC input and target state information.
+- In the armed state, motor control commands are determined based on RC input and hardware command information.
 
 Motor Control:
 - Motor control signals are generated for the left and right motors.
@@ -50,7 +52,7 @@ Setup:
 
 Loop:
 - In the main loop, the script continuously processes RC input, updates robot commands, writes motor signals.
-- Target position and distance influence robot behavior.
+- Hardware command influences robot behavior.
 
 Overall, this code facilitates real-time robot control through ROS and RC input, making it suitable for remote-controlled robotic applications.
 */
@@ -99,7 +101,7 @@ ros::NodeHandle nh;
 Servo camServo;
 int servo_pos = MAX_SERVO_POS;
 
-// Varible for target position and distaance
+// Varible for hardware command
 uint8_t movement_command_ = 0;
 uint8_t cam_angle_command_ = 0;
 
@@ -114,7 +116,7 @@ void callback_function( const follower::HardwareCommand& msg){
   cam_angle_command_ = msg.cam_angle_command;
 }
 
-// Create subscriber for target info
+// Create subscriber for hardware command info
 ros::Subscriber<follower::HardwareCommand> sub("hardware_command", callback_function);
 
 // Set the length of msg you want to send + 1
@@ -228,9 +230,11 @@ void update_failsafe(){
  *
  * If the failsafe is disarmed, sets the PWM values to 0 and turns off the red and blue LEDs.
  * Otherwise, if the PWM input value at index 3 is less than 1600, calculates the PWM values for the right and left motors based on the PWM input values at indices 1 and 2.
- * If the PWM input value at index 3 is greater than or equal to 1600, checks the target position and distance to determine the appropriate action.
- * - If the target position is 1 and the target distance is greater than 150, rotates left and sets the message to 'L'.
- * - If the target position is 2
+ * If the PWM input value at index 3 is greater than or equal to 1600, checks the hardware command to determine the appropriate action.
+ * - If the movement command is 1, rotates left and sets the message to 'L'.
+ * - If the movement command is 2, rotates right and sets the message to 'R'.
+ * - If the movement command is 3, moves forward and sets the message to 'C'.
+ * - Otherwise, stops and sets the message to 'H'.
  */
 void update_cmd(){
   if(failsafe == DISARMED){ // Disarmed condition
@@ -247,7 +251,7 @@ void update_cmd(){
       digitalWrite(RED_LED, LOW);
       digitalWrite(BLUE_LED, HIGH);
     } else {
-      // Part to control vehicle heading based on the target position
+      // Part to control vehicle heading based on the movement command
       if (movement_command_== 1){
         rotate_left();
         msg[0] = 'L';
