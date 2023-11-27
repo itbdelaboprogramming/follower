@@ -62,7 +62,7 @@ Overall, this code exemplifies the implementation of real-time object tracking b
 
 
 class ObjectTracker(object):
-    def __init__(self, algorithm: int = 0, use_aruco: bool = False, aruco_id: int = 0):
+    def __init__(self, algorithm: int = 0, use_aruco: bool = False, aruco_id: int = 0, enable_transducer: bool = False):
         """
         Initialize an object tracker with various tracking algorithms.
 
@@ -87,6 +87,7 @@ class ObjectTracker(object):
         self.use_aruco = use_aruco
         self.aruco_id = aruco_id
         self.aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
+        self.enable_transducer = enable_transducer
     
     def create(self):
         """
@@ -298,7 +299,7 @@ class ObjectTracker(object):
         else:
             return None, None
         
-    def get_target_position(self, depth: np.ndarray, obs_threshold: float):
+    def get_target_position(self, depth: np.ndarray, obs_threshold: float, ultrasonic_target_direction: float):
         """Function to get target position. Image is divided into 3 sector in x axis. 
            If the target is on the Left, Center or Right it will return move command (string) with that sector, else it will return 'Hold'.
            If the target is on the Top or Bottom it will return cam angle command (string) with that sector, else it will return 'Hold'.
@@ -333,7 +334,7 @@ class ObjectTracker(object):
         
         return move_cmd, cam_angle_cmd
         
-    def get_target_distance(self, depth: np.ndarray):
+    def get_target_distance(self, depth: np.ndarray, ultrasonic_target_distance: float):
         """Function to get the target distance in m.
         @param:
          depth: depth image from IntelRealsense in np.ndarray format

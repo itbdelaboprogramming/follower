@@ -70,9 +70,13 @@ hardware_command_pub = rospy.Publisher('hardware_command', HardwareCommand, queu
 vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
 
 # Create ROS Subscribers
-def hardware_state_callback(msg):
-    #TODO: implement callback logic
-    pass
+ultrasonic_target_direction = 0.0
+ultrasonic_target_distance = 0.0
+def hardware_state_callback(msg: HardwareState):
+    global ultrasonic_target_direction
+    global ultrasonic_target_distance
+    ultrasonic_target_direction = msg.ultrasonic_target_direction
+    ultrasonic_target_distance = msg.ultrasonic_target_distance
 hardware_state_sub = rospy.Subscriber('hardware_state', HardwareState, hardware_state_callback)
 
 # ROS Parameters (Get rosparams loaded from follower.yaml)
@@ -87,12 +91,13 @@ compute_period  = rospy.get_param("/compute_period")
 use_aruco = rospy.get_param("/use_aruco")
 aruco_id = rospy.get_param("/aruco_id")
 track_algorithm = rospy.get_param("/track_algorithm")
+enable_transducer = rospy.get_param("/enable_transducer")
 use_debug = rospy.get_param("/use_debug", False)
 
 # Initialize Camera and Darknet
 camera = DeviceCamera(camera_id, camera_fps, use_realsense)
 net = DarknetDNN()
-tracker = ObjectTracker(track_algorithm, use_aruco, aruco_id)
+tracker = ObjectTracker(track_algorithm, use_aruco, aruco_id, enable_transducer)
 #video = cv2.VideoCapture("C:\\Users\\luthf\\Videos\\Captures\\safety_vest_video.mp4")
 
 # Node frequency
@@ -136,8 +141,9 @@ while not rospy.is_shutdown():
     msg = HardwareCommand()
     msg.movement_command = 0
 
-    move_position, cam_position = tracker.get_target_position(depth, obs_stop_dist)
-    distance = tracker.get_target_distance(depth)
+    move_position, cam_position = tracker.get_target_position(depth, obs_stop_dist, 
+                                                              ultrasonic_target_direction)
+    distance = tracker.get_target_distance(depth, ultrasonic_target_distance)
     distance = distance if distance is not None else -1.0
 
     vel = Twist()
