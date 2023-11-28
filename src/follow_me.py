@@ -70,8 +70,8 @@ hardware_command_pub = rospy.Publisher('hardware_command', HardwareCommand, queu
 vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
 
 # Create ROS Subscribers
-ultrasonic_target_direction = 0.0
-ultrasonic_target_distance = 0.0
+ultrasonic_target_direction = -1.0
+ultrasonic_target_distance = -1.0
 def hardware_state_callback(msg: HardwareState):
     global ultrasonic_target_direction
     global ultrasonic_target_distance

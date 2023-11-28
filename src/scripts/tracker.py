@@ -311,7 +311,15 @@ class ObjectTracker(object):
         cx, cy = self.get_target_center()
         obs_left, obs_center, obs_right = self.is_obstacle_within_threshold(depth, obs_threshold)
         if cx is None:
-            move_cmd = 'Hold'
+            if self.enable_transducer:
+                if ((330.0 < ultrasonic_target_direction <= 359.9) or (0.0 <= ultrasonic_target_direction < 30.0)) and not obs_left and not obs_right:
+                    move_cmd = 'Center'
+                elif (30.0 <= ultrasonic_target_direction <= 180.0) and not obs_right:
+                    move_cmd = 'Right'
+                elif (180.0 < ultrasonic_target_direction <= 330.0) and not obs_left:
+                    move_cmd = 'Left'
+            else:
+                move_cmd = 'Hold'
         else:
             if cx <= self.image_width/3 and not obs_left:
                 move_cmd = 'Left'
@@ -341,7 +349,10 @@ class ObjectTracker(object):
         """
         cx, cy = self.get_target_center()
         if depth is None or cx is None:
-            return None
+            if self.enable_transducer:
+                return ultrasonic_target_distance
+            else:
+                return None
         elif cx > self.frame_width or cx < 0:
             return None
         elif cy > self.frame_height or cy < 0:
