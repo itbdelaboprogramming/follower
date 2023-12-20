@@ -59,11 +59,11 @@ Overall, this code facilitates real-time robot control through ROS and RC input,
 
 // RC is receiver with 4 PWM channel
 #define RC_CH_COUNT 5
-#define RC_CH1      48
-#define RC_CH2      49
-#define RC_CH3      47
-#define RC_CH4      43 // used as failsafe
-#define RC_CH5      42
+#define RC_CH1      A8
+#define RC_CH2      A9
+#define RC_CH3      A10
+#define RC_CH4      A11 // used as failsafe
+#define RC_CH5      A12
 #define RC_DEAD_ZONE 20
 
 // MT is motor, used to customize motor parameter
@@ -107,7 +107,7 @@ uint8_t cam_angle_command_ = 0;
 
 RC_Receiver receiver(RC_CH1, RC_CH2, RC_CH3, RC_CH4, RC_CH5);
 uint16_t pwm_in[RC_CH_COUNT + 1]; // this array starts from 1
-long int pwm_offset[] = {0, 9, 18, 9, 9, 9}; // this array starts from 1
+long int pwm_offset[] = {0, 9, 18, 9, 9, 9, 9, 9, 9}; // this array starts from 1
 int16_t  pwm_r = 0, pwm_l = 0, failsafe = DISARMED;
 
 // Callback function that handles data subscribing
@@ -208,12 +208,16 @@ void loop() {
 
 // Updates the values of the pwm_in array based on the receiver input and offset values.
 void update_rc(){
+  int a = millis();
   for(byte i = 1; i <= 5; i++){
     pwm_in[i] = receiver.getRaw(i) + pwm_offset[i];
     if(abs(pwm_in[i] - 1500) < RC_DEAD_ZONE){
       pwm_in[i] = 1500;
     }
   }
+  int b = millis();
+
+  Serial.println(b-a);
 }
 
 void update_failsafe(){
