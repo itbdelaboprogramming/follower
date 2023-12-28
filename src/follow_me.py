@@ -29,7 +29,7 @@ Parameters:
 
 ROS Node Initialization:
 - The script initializes a ROS node named 'follow_me_node' for communication and control.
-- ROS publishers ("hardware_command_pub" and "vel_pub") are created to send robot commands.
+- ROS publishers ("hardware_command_pub") are created to send robot commands.
 - ROS subscriber "hardware_state_sub" is created to receive robot hardware state from Arduino.
 
 Robot Control Parameters:
@@ -67,7 +67,6 @@ rospy.init_node('follow_me_node')
 
 # Create ROS Publishers
 hardware_command_pub = rospy.Publisher('hardware_command', HardwareCommand, queue_size=1)
-vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
 
 # Create ROS Subscribers
 ultrasonic_target_direction = -1.0
@@ -180,7 +179,6 @@ while not rospy.is_shutdown():
     
     #rospy.loginfo(msg, tracker.get_target_center(), position)
     hardware_command_pub.publish(msg)
-    vel_pub.publish(vel)
     
     if (use_debug):
         frame = camera.show_fps(frame)
