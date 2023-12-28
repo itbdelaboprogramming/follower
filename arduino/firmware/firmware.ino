@@ -94,8 +94,8 @@ In "loop()":
 #define INCREMENT_POS 10
 
 // ULTRASONIC
-#define ULT_SERIAL Serial2
-#define BUFFER_LEN 11
+#define UART2_RX 17
+#define UART2_TX 16
 
 // Constants
 #define LOOP_TIME 25                    // in milliseconds
@@ -195,9 +195,8 @@ unsigned long time_last = 0;
 float dt;
 
 // Ultrasonic Variables
-char ultrasonic_data[BUFFER_LEN];
-float direction  = 0.0;
-float distance = 0.0;
+float ult_direction  = 0.0;
+float ult_distance = 0.0;
 
 // Servo
 Servo camServo;
@@ -253,7 +252,8 @@ void setup(){
 
     debugHeader();
 
-    ULT_SERIAL.begin(9600); // software UART is slow, max baud rate = 38400
+    pinMode(UART2_RX, INPUT);
+    pinMode(UART2_TX, INPUT);
 
     delay(2000);
 }
@@ -587,13 +587,11 @@ void write_servo(){
 }
 
 void update_ultrasonic_data(){
-  if(ULT_SERIAL.available()){
-    ULT_SERIAL.readBytes(ultrasonic_data, 11);
-    direction  = atof(strtok(ultrasonic_data, ","));
-    distance = atof(strtok(NULL, ",")) / 32.0;
-  }
-  hardware_state_msg.ultrasonic_target_direction = direction;
-  hardware_state_msg.ultrasonic_target_distance = distance;
+  ult_distance = map(pulseIn(UART2_RX, HIGH), 1000, 2000, 0, 256);
+  ult_distance = ult_distance / 32.0;
+  ult_direction = map(pulseIn(UART2_TX, HIGH), 1000, 2000, -90, 360);
+  hardware_state_msg.ultrasonic_target_direction = ult_direction;
+  hardware_state_msg.ultrasonic_target_distance = ult_distance;
   hardware_state_pub.publish(&hardware_state_msg);
 }
 
