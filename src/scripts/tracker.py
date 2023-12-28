@@ -318,6 +318,8 @@ class ObjectTracker(object):
                     move_cmd = 'Right'
                 elif (180.0 < ultrasonic_target_direction <= 330.0) and not obs_left:
                     move_cmd = 'Left'
+                else:
+                    move_cmd = 'Hold'
             else:
                 move_cmd = 'Hold'
         else:
