@@ -231,6 +231,7 @@ void setup(){
 
     //Initiate ROS node
     nh.initNode();
+    nh.advertise(hardware_state_pub);
     nh.subscribe(sub);
     
     RightMotor.begin();
