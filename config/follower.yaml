@@ -9,4 +9,4 @@ compute_period: 25        # ms, (jetson max realsense fps is ~40 fps = 25 ms) --
 use_aruco: true           # set false to use person & color detection
 aruco_id: 0               # aruco id to follow, dictionary: Original Aruco, default id 0
 track_algorithm: 6        # default 6 (Nano) best performance, algorithm number for non-aruco tracking, 0: None, 1: DaSiamRPN, 2: CSRT, 3: KCF, 4: GOTURN, 5: MIL, 6: Nano
-enable_transducer: false  # set false to disable ultrasonic trasnducer to follow in dark areas 
+enable_transducer: true  # set false to disable ultrasonic trasnducer to follow in dark areas 
