@@ -592,6 +592,10 @@ void update_ultrasonic_data(){
     direction  = atof(strtok(ultrasonic_data, ","));
     distance = atof(strtok(NULL, ",")) / 32.0;
   }
+  else {
+    direction = -1.0;
+    distance = -1.0;
+  }
   hardware_state_msg.ultrasonic_target_direction = direction;
   hardware_state_msg.ultrasonic_target_distance = distance;
   hardware_state_pub.publish(&hardware_state_msg);
