@@ -1,2 +1,0 @@
-uint8 movement_command
-uint8 cam_angle_command

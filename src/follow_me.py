@@ -9,9 +9,7 @@ import numpy as np
 import time
 
 import rospy
-from follower.msg import HardwareCommand
-from follower.msg import HardwareState
-from geometry_msgs.msg import Twist
+from ros_msd700_msgs.msg import HardwareCommand, HardwareState
 
 """
 Real-Time Object Tracking with ROS and YOLO Detection
@@ -79,25 +77,26 @@ def hardware_state_callback(msg: HardwareState):
 hardware_state_sub = rospy.Subscriber('hardware_state', HardwareState, hardware_state_callback)
 
 # ROS Parameters (Get rosparams loaded from follower.yaml)
-camera_id = rospy.get_param("/camera_id")
-camera_fps = rospy.get_param("/camera_fps")
-use_realsense = rospy.get_param("/use_realsense")
-max_speed = rospy.get_param("/max_speed") 
-max_turn = rospy.get_param("/max_turn") 
-tgt_stop_dist = rospy.get_param("/tgt_stop_dist")
-obs_stop_dist = rospy.get_param("/obs_stop_dist")
-compute_period  = rospy.get_param("/compute_period")
-use_aruco = rospy.get_param("/use_aruco")
-aruco_id = rospy.get_param("/aruco_id")
-track_algorithm = rospy.get_param("/track_algorithm")
-enable_transducer = rospy.get_param("/enable_transducer")
+camera_id = rospy.get_param("/follower_node/camera_id")
+camera_fps = rospy.get_param("/follower_node/camera_fps")
+use_realsense = rospy.get_param("/follower_node/use_realsense")
+max_speed = rospy.get_param("/follower_node/max_speed")                      # in m/s
+max_turn = rospy.get_param("/follower_node/max_turn")                        # in rad/s
+wheel_radius = rospy.get_param("/follower_node/wheel_radius")                # in cm
+wheel_distance = rospy.get_param("/follower_node/wheel_distance")            # in cm
+tgt_stop_dist = rospy.get_param("/follower_node/tgt_stop_dist")
+obs_stop_dist = rospy.get_param("/follower_node/obs_stop_dist")
+compute_period  = rospy.get_param("/follower_node/compute_period")
+use_aruco = rospy.get_param("/follower_node/use_aruco")
+aruco_id = rospy.get_param("/follower_node/aruco_id")
+track_algorithm = rospy.get_param("/follower_node/track_algorithm")
+enable_transducer = rospy.get_param("/follower_node/enable_transducer")
 use_debug = rospy.get_param("/use_debug", False)
 
 # Initialize Camera and Darknet
 camera = DeviceCamera(camera_id, camera_fps, use_realsense)
 net = DarknetDNN()
 tracker = ObjectTracker(track_algorithm, use_aruco, aruco_id, enable_transducer)
-#video = cv2.VideoCapture("C:\\Users\\luthf\\Videos\\Captures\\safety_vest_video.mp4")
 
 # Node frequency
 frequency = (1/compute_period) * 1000
@@ -112,31 +111,11 @@ net.set_color_threshold(34)
 while not rospy.is_shutdown():
     # Get frame from camera
     frame, depth = camera.get_frame()
-    
-    """
-    # Get the width and height of the frame
-    height, width, _ = frame.shape
 
-    # Print the width and height
-    print("Width:", width)
-    print("Height:", height)
-    """
-
-    #tracker.track_object(frame, net)
-
-    #frame 640 x 480 MIL --> std::bad_alloc
+    # track object
     tracker.track_object_with_time(frame, net, 10.0)
 
-    """
-    #MIL
-    resized_frame = cv2.resize(frame, (160, 120))
-    #frame = resized_frame
-    tracker.track_object_with_time(resized_frame, net, 10.0)
-    """
-    
-    #print(tracker.get_target_position())
-
-    # Publish the command
+    # Create msg variable
     msg = HardwareCommand()
     msg.movement_command = 0
 
@@ -145,26 +124,24 @@ while not rospy.is_shutdown():
     distance = tracker.get_target_distance(depth, ultrasonic_target_distance)
     distance = distance if distance is not None else -1.0
 
-    vel = Twist()
-    if distance is not None:
-        vel.linear.x = max(min(0.4*round((tgt_stop_dist-distance)/10)*10, max_speed), -max_speed) #round the distance error into 10^1 cm order then multiplies it by a proportional factor of 0.4, then constraint it into [-max_speed, max_speed]
-    else:
-        vel.linear.x = 0.0
-
     # move command
     if move_position == 'Right':
         msg.movement_command = 1
-        vel.angular.z = max_turn
+        # inverse kinematics
+        msg.right_motor_speed = (0 - max_turn*wheel_distance/(2.0*wheel_radius))*9.55  #in RPM
+        msg.left_motor_speed = (0 + max_turn*wheel_distance/(2.0*wheel_radius))*9.55   #in RPM
     elif move_position == 'Left':
         msg.movement_command = 2
-        vel.angular.z = -max_turn
+        msg.right_motor_speed = (0 + max_turn*wheel_distance/(2.0*wheel_radius))*9.55  #in RPM
+        msg.left_motor_speed = (0 - max_turn*wheel_distance/(2.0*wheel_radius))*9.55   #in RPM
     elif move_position == 'Center' and distance > tgt_stop_dist:
         msg.movement_command = 3
-        vel.angular.z = 0.0
+        msg.right_motor_speed = (max_speed*100.0/wheel_radius - 0)*9.55  #in RPM
+        msg.left_motor_speed = (max_speed*100.0/wheel_radius + 0)*9.55   #in RPM
     else:
         msg.movement_command = 0
-        vel.linear.x = 0.0
-        vel.angular.z = 0.0
+        msg.right_motor_speed = 0  #in RPM
+        msg.left_motor_speed = 0   #in RPM
         move_position = 'Hold'
     
     print(tracker.get_target_center(), "->", move_position, "->", cam_position)

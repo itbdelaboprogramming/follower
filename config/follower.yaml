@@ -1,12 +1,15 @@
-camera_id: 4              # camera id
-camera_fps: 60            # camera fps, set to 30 fps if request could not be resolved
-use_realsense: true       # set false to use regular camera
-max_speed: 1.0            # m/s, max linear speed of the robot
-max_turn: 0.8             # rad/s, max angular speed of the robot
-tgt_stop_dist: 1.0        # m, stop distance threshold for target to follow, default is 1.0 m
-obs_stop_dist: 0.5        # m, stop distance threshold for nearby obstacles, default is 0.5 m
-compute_period: 25        # ms, (jetson max realsense fps is ~40 fps = 25 ms) --> for color detection set to 33 ms
-use_aruco: true           # set false to use person & color detection
-aruco_id: 0               # aruco id to follow, dictionary: Original Aruco, default id 0
-track_algorithm: 6        # default 6 (Nano) best performance, algorithm number for non-aruco tracking, 0: None, 1: DaSiamRPN, 2: CSRT, 3: KCF, 4: GOTURN, 5: MIL, 6: Nano
-enable_transducer: true  # set false to disable ultrasonic trasnducer to follow in dark areas 
+follower_node:
+  camera_id: 4              # camera id
+  camera_fps: 60            # camera fps, set to 30 fps if request could not be resolved
+  use_realsense: true       # set false to use regular camera
+  max_speed: 1.0            # m/s, max linear speed of the robot
+  max_turn: 0.8             # rad/s, max angular speed of the robot
+  wheel_radius: 2.75        # cm (current prototype's wheel has diameter of 5.5 cm approximately)
+  wheel_distance: 23.0      # cm
+  tgt_stop_dist: 1.0        # m, stop distance threshold for target to follow, default is 1.0 m
+  obs_stop_dist: 0.5        # m, stop distance threshold for nearby obstacles, default is 0.5 m
+  compute_period: 25        # ms, (jetson max realsense fps is ~40 fps = 25 ms) --> for color detection set to 33 ms
+  use_aruco: true           # set false to use person & color detection
+  aruco_id: 0               # aruco id to follow, dictionary: Original Aruco, default id 0
+  track_algorithm: 6        # default 6 (Nano) best performance, algorithm number for non-aruco tracking, 0: None, 1: DaSiamRPN, 2: CSRT, 3: KCF, 4: GOTURN, 5: MIL, 6: Nano
+  enable_transducer: true   # set false to disable ultrasonic trasnducer to follow in dark areas 

@@ -7,7 +7,7 @@ This document is the reference to install the Follower project for kernel 5.10.1
 2. Installed [rosserial_arduino](http://wiki.ros.org/rosserial_arduino). With this package we can connect our machine with Arduino and communicate with it using ROS.
 3. Installed [Git](https://git-scm.com/downloads).
 
-## Instal `rosserial_arduino`
+## Install `rosserial_arduino`
 
 If you haven't installed `rosserial_arduino`, here are the step to install it.  
 Open the terminal and run the following command.
@@ -41,7 +41,11 @@ cd ~/catkin_ws/src
 3. Clone the repository.
 Ps. Delete the home folder. It contains [libuvc_installation.sh](./home/libuvc_installation.sh) file for building the SDK without kernel patching.
 ``` bash
+# follower repository
 git clone https://github.com/itbdelaboprogramming/follower.git
+
+# msg and srv definition repository
+git clone https://github.com/itbdelaboprogramming/ros_msd700_msgs.git
 ```
 4. Go to
 ```bash
@@ -60,45 +64,8 @@ git lfs track "*.bin"
 ```
 
 ## 2. Setup the Arduino Board
+Refer to the central MSD700 firmware repository [here](https://github.com/itbdelaboprogramming/firmware-msd700/tree/main).
 
-1. Run the ROS Environment.
-``` bash
-roscore
-```
-2. Go to your Arduino libraries directory and remove the ros_lib folder if it already exist.
-``` bash
-cd <sketchbook>/libraries
-rm -rf ros_lib
-```
-3. Open a new terminal an create a new ros_lib. A new folder named `ros_lib` should appear in your Arduino Libraries directory.
-``` bash
-rosrun rosserial_arduino make_libraries.py .
-```
-4. Go back to the `follower` directory and go to the Arduino folder.
-``` bash
-cd ~/catkin_ws/src/follower/arduino/test_custom_ros_msg
-```
-5. Open the Arduino sketch with Arduino IDE and upload it to your board.
-``` bash
-arduino test_custom_ros_msg
-```
-6. Change the follower launch for Arduino port /dev/ttyACM0.
-```bash
-<?xml version="1.0"?>
-<launch>
-
-    <arg name="port" default="/dev/ttyACM0"/>
-    <arg name="baud" default="57600"/>
-
-    <node pkg="follower" type="follow_me.py" name="camera_control"></node>
-
-    <node pkg="rosserial_python" type="serial_node.py" name="serial_node">
-        <param name="port" value="$(arg port)"/>
-        <param name="baud" value="$(arg baud)"/>
-    </node>
-
-</launch>
-```
 
 ## 3. Install the LibRealSense SDK Backend
 Reference: https://dev.intelrealsense.com/docs/nvidia-jetson-tx2-installation?_ga=2.199325614.1419648290.1698731731-162685563.1698223953
@@ -214,28 +181,11 @@ python3
 ```
 
 ## 5. Run the Package
-
-5.1 Test the follower code
-
-1. Test the follow_me code by running the commands below.
-```bash
-roscore
-rosrun follower follow_me.py
-```
-
-2. Check the topic to get the position and distance.
-```bash
-rostopic list
-rostopic echo /rover_command
-```
-
-5.2 Launch the whole program after uploading this [code](./arduino/test_custom_ros_msg/test_custom_ros_msg.ino) to the arduino board.
-
-Launch the node by run this command in terminal (without camera view).
+Launch the node by run this command in terminal (for robot use).
 ``` bash
 roslaunch follower follower.launch
 ```
-Launch the node by run this command in terminal (with camera view).
+Launch the node by run this command in terminal (for testing camera).
 ``` bash
 roslaunch follower debug.launch
 ```
