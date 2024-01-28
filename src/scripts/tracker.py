@@ -400,3 +400,9 @@ class ObjectTracker(object):
                 return False, False, False
         else:
             return False, False, False
+    
+    def get_dark_area_target(self, ch_ultrasonic_distances: list, lidar_distances: list):
+        #TODO: add dark area target logic
+        dark_target_direction = 0.0
+        dark_target_distance = 0.0
+        return dark_target_direction, dark_target_distance

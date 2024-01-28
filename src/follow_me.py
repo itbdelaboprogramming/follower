@@ -10,6 +10,7 @@ import time
 
 import rospy
 from ros_msd700_msgs.msg import HardwareCommand, HardwareState
+from sensor_msgs.msg import LaserScan
 
 """
 Real-Time Object Tracking with ROS and YOLO Detection
@@ -67,14 +68,25 @@ rospy.init_node('follow_me_node')
 hardware_command_pub = rospy.Publisher('hardware_command', HardwareCommand, queue_size=1)
 
 # Create ROS Subscribers
-ultrasonic_target_direction = -1.0
-ultrasonic_target_distance = -1.0
+ch_ultrasonic_distances = []
+right_motor_pulse_delta = 0
+left_motor_pulse_delta = 0
 def hardware_state_callback(msg: HardwareState):
-    global ultrasonic_target_direction
-    global ultrasonic_target_distance
-    ultrasonic_target_direction = msg.ultrasonic_target_direction
-    ultrasonic_target_distance = msg.ultrasonic_target_distance
+    global ch_ultrasonic_distances, right_motor_pulse_delta, left_motor_pulse_delta
+    ch_ultrasonic_distances = msg.ch_ultrasonic_distances
+    right_motor_pulse_delta = msg.right_motor_pulse_delta
+    left_motor_pulse_delta = msg.left_motor_pulse_delta
 hardware_state_sub = rospy.Subscriber('hardware_state', HardwareState, hardware_state_callback)
+
+lidar_distances = []
+def Angle2Index(laser_scan_msg, angle):
+    return (int)((angle-laser_scan_msg.angle_min)/laser_scan_msg.angle_increment)
+def Index2Angle(laser_scan_msg, index):
+    return (laser_scan_msg.angle_min + (index*laser_scan_msg.angle_increment))
+def lidar_scan_callback(msg: LaserScan):
+    global lidar_distances
+    lidar_distances = msg.ranges
+lidar_scan_sub = rospy.Subscriber("scan", LaserScan, lidar_scan_callback)
 
 # ROS Parameters (Get rosparams loaded from follower.yaml)
 camera_id = rospy.get_param("/follower_node/camera_id")
@@ -108,66 +120,69 @@ high_hsv = np.array([73, 255, 255], dtype=np.uint8)
 net.set_hsv_range(low_hsv, high_hsv)
 net.set_color_threshold(34)
 
-while not rospy.is_shutdown():
-    # Get frame from camera
-    frame, depth = camera.get_frame()
+# Main Loop
+try:
+    while not rospy.is_shutdown():
+        # Get frame from camera
+        frame, depth = camera.get_frame()
 
-    # track object
-    tracker.track_object_with_time(frame, net, 10.0)
+        # track object
+        tracker.track_object_with_time(frame, net, 10.0)
+        dark_target_direction, dark_target_distance = tracker.get_dark_area_target(ch_ultrasonic_distances, lidar_distances)
+        move_position, cam_position = tracker.get_target_position(depth, obs_stop_dist, 
+                                                                dark_target_direction)
+        distance = tracker.get_target_distance(depth, dark_target_distance)
+        distance = distance if distance is not None else -1.0
 
-    # Create msg variable
-    msg = HardwareCommand()
-    msg.movement_command = 0
-
-    move_position, cam_position = tracker.get_target_position(depth, obs_stop_dist, 
-                                                              ultrasonic_target_direction)
-    distance = tracker.get_target_distance(depth, ultrasonic_target_distance)
-    distance = distance if distance is not None else -1.0
-
-    # move command
-    if move_position == 'Right':
-        msg.movement_command = 1
-        # inverse kinematics
-        msg.right_motor_speed = (0 - max_turn*wheel_distance/(2.0*wheel_radius))*9.55  #in RPM
-        msg.left_motor_speed = (0 + max_turn*wheel_distance/(2.0*wheel_radius))*9.55   #in RPM
-    elif move_position == 'Left':
-        msg.movement_command = 2
-        msg.right_motor_speed = (0 + max_turn*wheel_distance/(2.0*wheel_radius))*9.55  #in RPM
-        msg.left_motor_speed = (0 - max_turn*wheel_distance/(2.0*wheel_radius))*9.55   #in RPM
-    elif move_position == 'Center' and distance > tgt_stop_dist:
-        msg.movement_command = 3
-        msg.right_motor_speed = (max_speed*100.0/wheel_radius - 0)*9.55  #in RPM
-        msg.left_motor_speed = (max_speed*100.0/wheel_radius + 0)*9.55   #in RPM
-    else:
+        # Create msg variable
+        msg = HardwareCommand()
         msg.movement_command = 0
-        msg.right_motor_speed = 0  #in RPM
-        msg.left_motor_speed = 0   #in RPM
-        move_position = 'Hold'
-    
-    print(tracker.get_target_center(), "->", move_position, "->", cam_position)
-    
-    # camera command
-    if cam_position == 'Up':
-        msg.cam_angle_command = 1
-    elif cam_position == 'Down':
-        msg.cam_angle_command = 2
-    else:
-        msg.cam_angle_command = 0
-    
-    #rospy.loginfo(msg, tracker.get_target_center(), position)
-    hardware_command_pub.publish(msg)
-    
-    if (use_debug):
-        frame = camera.show_fps(frame)
 
-        # Show the result
-        cv2.imshow("Video", frame)
+        # move command
+        if move_position == 'Right':
+            msg.movement_command = 1
+            # inverse kinematics
+            msg.right_motor_speed = (0 - max_turn*wheel_distance/(2.0*wheel_radius))*9.55  #in RPM
+            msg.left_motor_speed = (0 + max_turn*wheel_distance/(2.0*wheel_radius))*9.55   #in RPM
+        elif move_position == 'Left':
+            msg.movement_command = 2
+            msg.right_motor_speed = (0 + max_turn*wheel_distance/(2.0*wheel_radius))*9.55  #in RPM
+            msg.left_motor_speed = (0 - max_turn*wheel_distance/(2.0*wheel_radius))*9.55   #in RPM
+        elif move_position == 'Center' and distance > tgt_stop_dist:
+            msg.movement_command = 3
+            msg.right_motor_speed = (max_speed*100.0/wheel_radius - 0)*9.55  #in RPM
+            msg.left_motor_speed = (max_speed*100.0/wheel_radius + 0)*9.55   #in RPM
+        else:
+            msg.movement_command = 0
+            msg.right_motor_speed = 0  #in RPM
+            msg.left_motor_speed = 0   #in RPM
+            move_position = 'Hold'
+        
+        print(tracker.get_target_center(), "->", move_position, "->", cam_position)
+        
+        # camera command
+        if cam_position == 'Up':
+            msg.cam_angle_command = 1
+        elif cam_position == 'Down':
+            msg.cam_angle_command = 2
+        else:
+            msg.cam_angle_command = 0
+        
+        #rospy.loginfo(msg, tracker.get_target_center(), position)
+        hardware_command_pub.publish(msg)
+        
+        if (use_debug):
+            frame = camera.show_fps(frame)
 
-        # Exit condition
-        key = cv2.waitKey(1)
-        if key == 27 or key == ord('q'):
-            print(f"Key {key} is pressed")
-            break
-    rate.sleep()
+            # Show the result
+            cv2.imshow("Video", frame)
 
-camera.stop()
+            # Exit condition
+            key = cv2.waitKey(1)
+            if key == 27 or key == ord('q'):
+                print(f"Key {key} is pressed")
+                break
+        rate.sleep()
+
+except:
+    camera.stop()
