@@ -68,12 +68,31 @@ rospy.init_node('follow_me_node')
 hardware_command_pub = rospy.Publisher('hardware_command', HardwareCommand, queue_size=1)
 
 # Create ROS Subscribers
+ch_ultrasonic_distance_1 = 0.0
+ch_ultrasonic_distance_2 = 0.0
+ch_ultrasonic_distance_3 = 0.0
+ch_ultrasonic_distance_4 = 0.0
+ch_ultrasonic_distance_5 = 0.0
+ch_ultrasonic_distance_6 = 0.0
+ch_ultrasonic_distance_7 = 0.0
+ch_ultrasonic_distance_8 = 0.0
 ch_ultrasonic_distances = []
 right_motor_pulse_delta = 0
 left_motor_pulse_delta = 0
 def hardware_state_callback(msg: HardwareState):
-    global ch_ultrasonic_distances, right_motor_pulse_delta, left_motor_pulse_delta
-    ch_ultrasonic_distances = msg.ch_ultrasonic_distances
+    global ch_ultrasonic_distances, right_motor_pulse_delta, left_motor_pulse_delta, \
+    ch_ultrasonic_distance_1, ch_ultrasonic_distance_2, ch_ultrasonic_distance_3, ch_ultrasonic_distance_4, \
+    ch_ultrasonic_distance_5, ch_ultrasonic_distance_6, ch_ultrasonic_distance_7, ch_ultrasonic_distance_8
+    ch_ultrasonic_distance_1 = msg.ch_ultrasonic_distance_1
+    ch_ultrasonic_distance_2 = msg.ch_ultrasonic_distance_2
+    ch_ultrasonic_distance_3 = msg.ch_ultrasonic_distance_3
+    ch_ultrasonic_distance_4 = msg.ch_ultrasonic_distance_4
+    ch_ultrasonic_distance_5 = msg.ch_ultrasonic_distance_5
+    ch_ultrasonic_distance_6 = msg.ch_ultrasonic_distance_6
+    ch_ultrasonic_distance_7 = msg.ch_ultrasonic_distance_7
+    ch_ultrasonic_distance_8 = msg.ch_ultrasonic_distance_8
+    ch_ultrasonic_distances = [ch_ultrasonic_distance_1, ch_ultrasonic_distance_2, ch_ultrasonic_distance_3, ch_ultrasonic_distance_4,
+                               ch_ultrasonic_distance_5, ch_ultrasonic_distance_6, ch_ultrasonic_distance_7, ch_ultrasonic_distance_8]
     right_motor_pulse_delta = msg.right_motor_pulse_delta
     left_motor_pulse_delta = msg.left_motor_pulse_delta
 hardware_state_sub = rospy.Subscriber('hardware_state', HardwareState, hardware_state_callback)
