@@ -3,29 +3,7 @@ This document is the reference to install the Follower project for kernel 5.10.1
 
 ## Prerequisite
 
-1. Installed [ROS](http://wiki.ros.org/ROS/Installation). In this project, we use [ROS Noetic](http://wiki.ros.org/noetic/Installation) distribution.
-2. Installed [rosserial_arduino](http://wiki.ros.org/rosserial_arduino). With this package we can connect our machine with Arduino and communicate with it using ROS.
-3. Installed [Git](https://git-scm.com/downloads).
-
-## Install `rosserial_arduino`
-
-If you haven't installed `rosserial_arduino`, here are the step to install it.  
-Open the terminal and run the following command.
-```bash
-sudo apt-get install ros-$ROS_DISTRO-rosserial-arduino
-sudo apt-get install ros-$ROS_DISTRO-rosserial
-```
-For our development, because we use ROS Noetic the command that we use are 
-```bash
-sudo apt-get install ros-noetic-rosserial-arduino
-sudo apt-get install ros-noetic-rosserial
-```
-  
-After installing `rosserial` for our machine, we installed `rosserial` arduino library. 
-1. Open the Arduino IDE, in this case we use Arduino IDE 1.8.19 but this may work in other version as well.
-2. Open **Sketch** tab then select **Include Library** and click **Manage Libraries**.
-3. This will open **Library Manager** Window. Search for **rosserial** and install the library.
-
+Jetson Xavier NX or AGX Orin all software setups from Microsoft Teams documentation.
 
 # How to Use
 
@@ -39,7 +17,6 @@ sudo apt install git-lfs
 cd ~/catkin_ws/src
 ```
 3. Clone the repository.
-Ps. Delete the home folder. It contains [libuvc_installation.sh](./home/libuvc_installation.sh) file for building the SDK without kernel patching.
 ``` bash
 # follower repository
 git clone https://github.com/itbdelaboprogramming/follower.git
@@ -55,7 +32,7 @@ cd ~/catkin_ws
 ``` bash
 catkin_make
 ```
-6. (Optional) GitHub max file size is limited to 100 MB. To add another large file into Git LFS, use this command on your terminal:
+6. **(Optional)** GitHub max file size is limited to 100 MB. To add another large file into Git LFS, use this command on your terminal:
 ```bash
 # command format
 git lfs track "*.<file_extension>"
@@ -66,121 +43,7 @@ git lfs track "*.bin"
 ## 2. Setup the Arduino Board
 Refer to the central MSD700 firmware repository [here](https://github.com/itbdelaboprogramming/firmware-msd700/tree/main).
 
-
-## 3. Install the LibRealSense SDK Backend
-Reference: https://dev.intelrealsense.com/docs/nvidia-jetson-tx2-installation?_ga=2.199325614.1419648290.1698731731-162685563.1698223953
-
-3.1. Install the Debian Packages and SDK
-
-1. Register the server's public key.
-```bash
-sudo apt-key adv --keyserver keys.gnupg.net --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE || sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE
-```
-2. Add the server to the list of repositories.
-```bash
-sudo add-apt-repository "deb https://librealsense.intel.com/Debian/apt-repo focal main" -u
-```
-3. Install the SDK.
-```bash
-sudo apt-get install librealsense2-utils
-sudo apt-get install librealsense2-dev
-```
-4. Reconnect the RealSense device and run ```realsense-viewer``` to verify installation. Double tap after typing ```rs-``` to see full list of SDK examples.
-   
-3.2. Building from Source using RSUSB Backend
-Use the RSUSB backend without the kernel patching (avoid kernel patching procedure).
-
-1. Go to home directory.
-```bash
-cd
-```
-2. Create the libuvc_installation.
-```bash
-touch libuvc_installation.sh
-nano libuvc_installation.sh
-```
-4. Copy this [libuvc_installation.sh](./home/libuvc_installation.sh) file to the opened nano text editor.
-Make sure ```-DBUILD_WITH_CUDA=true``` is included to improve the performance. The code will looks like below.
-```bash
-cmake ../ -DFORCE_LIBUVC=true -DCMAKE_BUILD_TYPE=release -DBUILD_WITH_CUDA=true
-```
-5. Save and exit the text editor. Then, add the executable permission.
-```bash
-sudo chmod +x libuvc_installation.sh
-```
-6. Run the script to install.
-```bash
-./libuvc_installation.sh
-```
-
-3.3. Upgrade the Numpy and Install the Pyrealsense2
-
-1. Upgrade Numpy.
-```bash
-pip3 install numpy --upgrade
-```
-2. Install the Pyrealsense2.
-```bash
-pip3 install pyrealsense2
-```
-
-## 4. Build the OpenCV 4.8.1 with CUDA Compability | the latest version is 4.8.1 per 2023/11/03
-Default: OpenCV with SDK Manager (JetPack 5.1) without CUDA Compatibility | check the specification by running ```jtop```
-Reference: https://youtu.be/art0-99fFa8?si=TJeyWqiygaaqr1A0
-
-4.1. Build the OpenCV with CUDA
-
-1. Clone the Github.
-```bash
-cd
-git clone https://github.com/mdegans/nano_build_opencv.git
-```
-2. Go to the nano_build_opencv directory and open the build_opencv.sh
-```bash
-cd nano_build_opencv
-gedit build_opencv.sh
-```
-3. Make sure the CUDNN_VERSION are set according to the version shown on ```jtop```.
-```bash
--D CUDNN_VERSION='8.6'
-```
-4. Save and exit the text editor. Then, run the script to build the script according to the OpenCV version. The build process takes around ~3 hours to complete.
-```bash
-./build_opencv.sh 4.8.1
-```
-5. After the build process, there will be a request for the password, just insert the password. Then there will be an installation process. The installation will take ~2 minutes.
-
-6. After installation, there will be a question. Answer it with N.
-"Do you wish to remove temporary build files in /tmp/build_opencv ? (Doing so may make running tests on the build later impossible)
-
-7. The installation has completed. Check ```jtop```. It will show OpenCV: 4.8.1 - with CUDA: YES.
-
-4.2. Locate the Python to enable the OpenCV in Python
-
-1. Locate the Python library. Default location: /usr/local/lib/python3.8. Check yours by using ```ls```.
-```bash
-ls /usr/local/lib/python3.8
-```
-2. Open .bashrc and add the Python path to the last line of .bashrc.
-```bash
-export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/site-packages
-```
-3. Save and exit. The overall paths detected by Python will be shown in PYTHONPATH variable. One of the outputs should be /usr/local/lib/python3.8/site-packages.
-```bash
-echo $PYTHONPATH
-```
-4. Source back the bashrc.
-```bash
-source .bashrc
-```
-5. Check the OpenCV version and details here.
-```bash
-python3
->>> import cv2
->>> print(cv2.getBuildInformation())
-```
-
-## 5. Run the Package
+## 3. Run the Package
 Launch the node by run this command in terminal (for robot use).
 ``` bash
 roslaunch follower follower.launch
@@ -190,20 +53,35 @@ Launch the node by run this command in terminal (for testing camera).
 roslaunch follower debug.launch
 ```
 
-# Important! Read more!
-### This follower program uses Python's OOP concepts with the main Program is `follow_me.py`
+# API Reference
 
-#### - The main program will import Class `DeviceCamera` from :
-```bash
-~/follower/src/scripts/device_camera.py
-```
-When initialize the class `DeviceCamera()` is better to define the id device for the camera, for example `DeviceCamera(4)`. If you are using other cameras besides realsense, you need to redifine the class to false, for example `DeviceCamera(4, False)`.
+### Nodes
+follower.launch:
+- follower_node
+- serial_node
 
-#### - import Class `ObjectTracker` from :
-```bash
-~/follower/src/scripts/tracker.py
-```
-Using the `ObjectTracker` class you can choose from the available tracking methods. There are 6 tracker algorithms that can be used, which are:
+debug.launch:
+- follower_node
+
+### Publishers:
+| Topic             | Message Type                    | Information                                 |
+|-------------------|---------------------------------|---------------------------------------------|
+| /hardware_command | ros_msd700_msgs/HardwareCommand | custom command to microcontroller hardwares |
+| /cmd_vel          | geometry_msgs/Twist             | velocity command                            |
+
+### Subscribers
+| Topic           | Message Type                  | Information                                 |
+|-----------------|-------------------------------|---------------------------------------------|
+| /hardware_state | ros_msd700_msgs/HardwareState | custom state from microcontroller hardwares |
+| /scan           | sensor_msgs/LaserScan         | lidar scan topic                            |
+
+### ROS Parameters (rosparam):
+All robot parameters are defined in `/config/follower.yaml`. Please refer to the file for more information.
+
+<br>
+
+# Important Informations
+There are 6 ML-based tracker algorithms that can be used, which are:
 ```bash
     1. DasiamRPN
     2. CSRT
@@ -213,26 +91,17 @@ Using the `ObjectTracker` class you can choose from the available tracking metho
     6. Nano
 ```
 
-You need to define which algorithm you will use base on their number when initialize this class in the main program (`follow_me.py`), for example `tracker = ObjectTracker(4)`. We already try algorithm number 4 and it goes well so far. There will be update for other algorithm info in the future.
 
-#### - import Class `DarknetDNN` from :
-```bash
-~/follower/src/scripts/darknet_yolo.py
-```
-`DarknetDNN` designed for performing object detection using the Darknet framework and OpenCV. It's a versatile tool for identifying objects in a video stream, with a focus on customizable configurations and real-time feedback.
-
-In the main program (`follow_me.py`) class `DarknetDNN` is define by `net` variable. It will call `set_hsv_range(low_hsv, high_hsv)` and `set_color_threshold(value)` function. You can customize the hsv range with `set_hsv_range(low_hsv, high_hsv)` function. To set the minimum color confidence required for an object to be considered relevant, you can set parameter `value` in `set_color_threshold`. Objects with color confidence below this threshold will not be included in the final result.
-
-#### - `hsvtunner.py` is a program to calibrate the lower and upper limit values of hsv.
-you can run this program to find out the lower limit and upper limit of the hsv value of a specific color that you want. Type this code in your terminal:
+###  `hsvtunner.py` : program to calibrate the lower and upper limit values of hsv.
+To tune hsv value:
 ```bash
 cd ~/follower/src/scripts
 ```
 then run the code
 ```bash
-python hsvtunner.py --camera `your camera device number`
+python hsvtunner.py --camera <your camera device number from /dev/video>
 ```
-for example if the camera device number is 4
+for example if the camera device number is 4 (from /dev/video4s)
 ```bash
 python hsvtunner.py --camera 4
 ```
@@ -253,15 +122,3 @@ low_hsv = np.array([0, 221, 102], dtype=np.uint8)
 high_hsv = np.array([73, 255, 255], dtype=np.uint8)
 ```
 you also can search the limit of low and high hsv for your color in google.
-
-# ROS Nodes For the main program (`follow_me.py`)
-
-### Initialization:
-Initializes a ROS node named `follow_me_node` for this module to interact within the ROS ecosystem.
-
-### Publishers:
-`rover_command`: Sends commands related to the rover's behavior. Messages of type `HardwareCommand` are published on this topic.
-`cmd_vel`: Provides velocity control commands for the rover. Messages of type `Twist` are published on this topic.
-
-### Parameters:
-All robot parameters are defined in `/config/follower.yaml`. Please refer to the file for more information.
