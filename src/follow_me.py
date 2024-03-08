@@ -11,6 +11,7 @@ import time
 import rospy
 from ros_msd700_msgs.msg import HardwareCommand, HardwareState
 from sensor_msgs.msg import LaserScan
+from geometry_msgs.msg import Twist
 
 """
 Real-Time Object Tracking with ROS and YOLO Detection
@@ -66,33 +67,16 @@ rospy.init_node('follow_me_node')
 
 # Create ROS Publishers
 hardware_command_pub = rospy.Publisher('hardware_command', HardwareCommand, queue_size=1)
+cmd_vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
 
 # Create ROS Subscribers
-ch_ultrasonic_distance_1 = 0.0
-ch_ultrasonic_distance_2 = 0.0
-ch_ultrasonic_distance_3 = 0.0
-ch_ultrasonic_distance_4 = 0.0
-ch_ultrasonic_distance_5 = 0.0
-ch_ultrasonic_distance_6 = 0.0
-ch_ultrasonic_distance_7 = 0.0
-ch_ultrasonic_distance_8 = 0.0
 ch_ultrasonic_distances = []
 right_motor_pulse_delta = 0
 left_motor_pulse_delta = 0
 def hardware_state_callback(msg: HardwareState):
-    global ch_ultrasonic_distances, right_motor_pulse_delta, left_motor_pulse_delta, \
-    ch_ultrasonic_distance_1, ch_ultrasonic_distance_2, ch_ultrasonic_distance_3, ch_ultrasonic_distance_4, \
-    ch_ultrasonic_distance_5, ch_ultrasonic_distance_6, ch_ultrasonic_distance_7, ch_ultrasonic_distance_8
-    ch_ultrasonic_distance_1 = msg.ch_ultrasonic_distance_1
-    ch_ultrasonic_distance_2 = msg.ch_ultrasonic_distance_2
-    ch_ultrasonic_distance_3 = msg.ch_ultrasonic_distance_3
-    ch_ultrasonic_distance_4 = msg.ch_ultrasonic_distance_4
-    ch_ultrasonic_distance_5 = msg.ch_ultrasonic_distance_5
-    ch_ultrasonic_distance_6 = msg.ch_ultrasonic_distance_6
-    ch_ultrasonic_distance_7 = msg.ch_ultrasonic_distance_7
-    ch_ultrasonic_distance_8 = msg.ch_ultrasonic_distance_8
-    ch_ultrasonic_distances = [ch_ultrasonic_distance_1, ch_ultrasonic_distance_2, ch_ultrasonic_distance_3, ch_ultrasonic_distance_4,
-                               ch_ultrasonic_distance_5, ch_ultrasonic_distance_6, ch_ultrasonic_distance_7, ch_ultrasonic_distance_8]
+    global ch_ultrasonic_distances, right_motor_pulse_delta, left_motor_pulse_delta
+    ch_ultrasonic_distances = [msg.ch_ultrasonic_distance_1, msg.ch_ultrasonic_distance_2, msg.ch_ultrasonic_distance_3, msg.ch_ultrasonic_distance_4,
+                               msg.ch_ultrasonic_distance_5, msg.ch_ultrasonic_distance_6, msg.ch_ultrasonic_distance_7, msg.ch_ultrasonic_distance_8]
     right_motor_pulse_delta = msg.right_motor_pulse_delta
     left_motor_pulse_delta = msg.left_motor_pulse_delta
 hardware_state_sub = rospy.Subscriber('hardware_state', HardwareState, hardware_state_callback)
@@ -147,48 +131,63 @@ try:
 
         # track object
         tracker.track_object_with_time(frame, net, 10.0)
-        dark_target_direction, dark_target_distance = tracker.get_dark_area_target(ch_ultrasonic_distances, lidar_distances)
+        dark_target_direction, dark_target_distance = tracker.get_dark_target_position(ch_ultrasonic_distances, lidar_distances)
         move_position, cam_position = tracker.get_target_position(depth, obs_stop_dist, 
                                                                 dark_target_direction)
         distance = tracker.get_target_distance(depth, dark_target_distance)
         distance = distance if distance is not None else -1.0
 
         # Create msg variable
-        msg = HardwareCommand()
-        msg.movement_command = 0
+        hw_cmd_msg = HardwareCommand()
+        cmd_vel_msg = Twist()
 
         # move command
         if move_position == 'Right':
-            msg.movement_command = 1
-            # inverse kinematics
-            msg.right_motor_speed = (0 - max_turn*wheel_distance/(2.0*wheel_radius))*9.55  #in RPM
-            msg.left_motor_speed = (0 + max_turn*wheel_distance/(2.0*wheel_radius))*9.55   #in RPM
+            hw_cmd_msg.movement_command = 1
+            # hw command
+            hw_cmd_msg.right_motor_speed = (0 - max_turn*wheel_distance/(2.0*wheel_radius))*9.55  #in RPM
+            hw_cmd_msg.left_motor_speed = (0 + max_turn*wheel_distance/(2.0*wheel_radius))*9.55   #in RPM
+            # cmd_vel
+            cmd_vel_msg.linear.x = 0
+            cmd_vel_msg.angular.z = max_turn
         elif move_position == 'Left':
-            msg.movement_command = 2
-            msg.right_motor_speed = (0 + max_turn*wheel_distance/(2.0*wheel_radius))*9.55  #in RPM
-            msg.left_motor_speed = (0 - max_turn*wheel_distance/(2.0*wheel_radius))*9.55   #in RPM
+            hw_cmd_msg.movement_command = 2
+            # hw command
+            hw_cmd_msg.right_motor_speed = (0 + max_turn*wheel_distance/(2.0*wheel_radius))*9.55  #in RPM
+            hw_cmd_msg.left_motor_speed = (0 - max_turn*wheel_distance/(2.0*wheel_radius))*9.55   #in RPM
+            # cmd_vel
+            cmd_vel_msg.linear = 0
+            cmd_vel_msg.angular.z = -max_turn
         elif move_position == 'Center' and distance > tgt_stop_dist:
-            msg.movement_command = 3
-            msg.right_motor_speed = (max_speed*100.0/wheel_radius - 0)*9.55  #in RPM
-            msg.left_motor_speed = (max_speed*100.0/wheel_radius + 0)*9.55   #in RPM
+            hw_cmd_msg.movement_command = 3
+            # hw command
+            hw_cmd_msg.right_motor_speed = (max_speed*100.0/wheel_radius - 0)*9.55  #in RPM
+            hw_cmd_msg.left_motor_speed = (max_speed*100.0/wheel_radius + 0)*9.55   #in RPM
+            # cmd_vel
+            cmd_vel_msg.linear.x = max_speed
+            cmd_vel_msg.angular.z = 0
         else:
-            msg.movement_command = 0
-            msg.right_motor_speed = 0  #in RPM
-            msg.left_motor_speed = 0   #in RPM
+            hw_cmd_msg.movement_command = 0
+            # hw command
+            hw_cmd_msg.right_motor_speed = 0  #in RPM
+            hw_cmd_msg.left_motor_speed = 0   #in RPM
+            # cmd_vel
+            cmd_vel_msg.linear.x = 0
+            cmd_vel_msg.angular.z = 0
             move_position = 'Hold'
         
         print(tracker.get_target_center(), "->", move_position, "->", cam_position)
         
         # camera command
         if cam_position == 'Up':
-            msg.cam_angle_command = 1
+            hw_cmd_msg.cam_angle_command = 1
         elif cam_position == 'Down':
-            msg.cam_angle_command = 2
+            hw_cmd_msg.cam_angle_command = 2
         else:
-            msg.cam_angle_command = 0
+            hw_cmd_msg.cam_angle_command = 0
         
-        #rospy.loginfo(msg, tracker.get_target_center(), position)
-        hardware_command_pub.publish(msg)
+        hardware_command_pub.publish(hw_cmd_msg)
+        cmd_vel_pub.publish(cmd_vel_msg)
         
         if (use_debug):
             frame = camera.show_fps(frame)

@@ -55,7 +55,7 @@ cd ~/catkin_ws
 ``` bash
 catkin_make
 ```
-6. GitHub max file size is limited to 100 MB. To add large file into Git LFS, use this command on your terminal:
+6. (Optional) GitHub max file size is limited to 100 MB. To add another large file into Git LFS, use this command on your terminal:
 ```bash
 # command format
 git lfs track "*.<file_extension>"
