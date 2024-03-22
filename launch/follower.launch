@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <launch>
     <node pkg="follower" type="follow_me.py" name="follower_node" respawn="true"></node>
+    <node pkg="follower" type="odom_node.py" name="odom_node" respawn="true"></node>
     <node pkg="rosserial_python" type="serial_node.py" name="serial_node" respawn="true">
         <param name="port" value="/dev/ttyUSB1"/>
         <param name="baud" value="57600"/>
