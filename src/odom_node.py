@@ -9,7 +9,7 @@ from math import sin, cos, pi
 import rospy
 import tf
 from ros_msd700_msgs.msg import HardwareState
-from geometry_msgs.msg import Twist, Point, Pose, Quaternion, Vector3
+from geometry_msgs.msg import Twist, Point, Pose, Quaternion, Vector3, PoseStamped, TwistStamped
 from nav_msgs.msg import Odometry
 
 # Initialize ROS Node
@@ -17,6 +17,8 @@ rospy.init_node('odom_node')
 
 # Create ROS Publishers
 odom_pub = rospy.Publisher('odom', Odometry, queue_size=1)
+pose_pub = rospy.Publisher('pose', PoseStamped, queue_size=1)
+twist_pub = rospy.Publisher('twist', TwistStamped, queue_size=1)
 odom_broadcaster = tf.TransformBroadcaster()
 
 # Create ROS Subscribers
@@ -71,13 +73,31 @@ try:
             "base_link",
             "odom"
         )
+        pose = Pose(Point(x, y, 0.), Quaternion(*odom_quat))
+        twist = Twist(Vector3(vx, vy, 0), Vector3(0, 0, vth))
+
         odom_msg = Odometry()
         odom_msg.header.stamp = current_time
         odom_msg.header.frame_id = "odom"
-        odom_msg.pose.pose = Pose(Point(x, y, 0.), Quaternion(*odom_quat))
+        odom_msg.pose.pose = pose
         odom_msg.child_frame_id = "base_link"
-        odom_msg.twist.twist = Twist(Vector3(vx, vy, 0), Vector3(0, 0, vth))
+        odom_msg.twist.twist = twist
         odom_pub.publish(odom_msg)
+
+        # Pose
+        pose_msg = PoseStamped()
+        pose_msg.header.stamp = current_time
+        pose_msg.header.frame_id = "odom"
+        pose_msg.pose = pose
+        pose_pub.publish(pose_msg)
+
+        # Twist
+        twist_msg = TwistStamped()
+        twist_msg.header.stamp = current_time
+        twist_msg.header.frame_id = "odom"
+        twist_msg.twist = twist
+        twist_pub.publish(twist_msg)
+
         last_time = current_time
         rate.sleep()
 except:
