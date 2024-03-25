@@ -54,8 +54,8 @@ try:
         current_time = rospy.Time.now()
         delta_angle_right = right_motor_pulse_delta/gear_ratio * revolution_radian #rad
         delta_angle_left = left_motor_pulse_delta/gear_ratio * revolution_radian #rad
-        dx = wheel_radius_m/2.0 * (delta_angle_right + delta_angle_left) * sin(th) #m
-        dy = wheel_radius_m/2.0 * (delta_angle_right + delta_angle_left) * cos(th) #m
+        dx = wheel_radius_m/2.0 * (delta_angle_right + delta_angle_left) * cos(th) #m
+        dy = wheel_radius_m/2.0 * (delta_angle_right + delta_angle_left) * sin(th) #m
         dth = (delta_angle_right - delta_angle_left) * wheel_radius_m/wheel_distance_m #rad
         x += dx
         y += dy
