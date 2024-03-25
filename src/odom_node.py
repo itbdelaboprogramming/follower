@@ -9,7 +9,7 @@ from math import sin, cos, pi
 import rospy
 import tf
 from ros_msd700_msgs.msg import HardwareState
-from geometry_msgs.msg import Twist, Point, Pose, Quaternion, Vector3, PoseStamped, TwistStamped
+from geometry_msgs.msg import Twist, Point, Pose, Quaternion, Vector3, PoseStamped
 from nav_msgs.msg import Odometry
 
 # Initialize ROS Node
@@ -18,7 +18,6 @@ rospy.init_node('odom_node')
 # Create ROS Publishers
 odom_pub = rospy.Publisher('odom', Odometry, queue_size=1)
 pose_pub = rospy.Publisher('pose', PoseStamped, queue_size=1)
-twist_pub = rospy.Publisher('twist', TwistStamped, queue_size=1)
 odom_broadcaster = tf.TransformBroadcaster()
 
 # Create ROS Subscribers
@@ -90,13 +89,6 @@ try:
         pose_msg.header.frame_id = "odom"
         pose_msg.pose = pose
         pose_pub.publish(pose_msg)
-
-        # Twist
-        twist_msg = TwistStamped()
-        twist_msg.header.stamp = current_time
-        twist_msg.header.frame_id = "odom"
-        twist_msg.twist = twist
-        twist_pub.publish(twist_msg)
 
         last_time = current_time
         rate.sleep()
