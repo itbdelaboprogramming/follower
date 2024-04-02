@@ -85,7 +85,7 @@ class DeviceCamera:
             return True, rs
         except ImportError:
             print("Pyrealsense2 is not available")
-            return False, None
+            raise ImportError("pyrealsense2 is not available, install by running 'pip3 install pyrealsense2")
 
     def stream_realsense(self):
         # Configure depth and color streams

@@ -127,7 +127,7 @@ try:
             cmd_vel_msg.angular.z = 0
             move_position = 'Hold'
         
-        print(tracker.get_target_center(), "->", move_position, "->", cam_position)
+        print(tracker.get_target_center(), distance, "m ->", move_position, "->", cam_position)
         
         # camera command
         if cam_position == 'Up':

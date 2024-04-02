@@ -1,9 +1,9 @@
 # MSD700 'Follower' Package
-This document is the reference to install the Follower project for kernel 5.10.104-tegra aarch64 (NVIDIA Jetson Xavier NX)
+This document is the reference to install the Follower ROS package
 
-## Prerequisite
+# Prerequisite
 
-Jetson Xavier NX or AGX Orin all software setups from Microsoft Teams documentation.
+Jetson Xavier NX or AGX Orin with all software setups from Microsoft Teams documentation.
 
 # How to Use
 
@@ -28,11 +28,17 @@ git clone https://github.com/itbdelaboprogramming/ros_msd700_msgs.git
 ```bash
 cd ~/catkin_ws
 ```
-5. Make the ROS workspace, type `catkin_make` into the terminal and run it.
+
+5. Install pyrealsense2 for Intel Realsense camera.
+```bash
+pip3 install pyrealsense2
+```
+
+6. Compile, type `catkin_make` into the terminal and run it.
 ``` bash
 catkin_make
 ```
-6. **(Optional)** GitHub max file size is limited to 100 MB. To add another large file into Git LFS, use this command on your terminal:
+7. **(Optional)** GitHub max file size is limited to 100 MB. To add another large file into Git LFS, use this command on your terminal:
 ```bash
 # command format
 git lfs track "*.<file_extension>"
@@ -48,7 +54,7 @@ Launch the node by run this command in terminal (for robot use).
 ``` bash
 roslaunch follower follower.launch
 ```
-Launch the node by run this command in terminal (for testing camera).
+Launch the node by run this command in terminal (for camera and logic test).
 ``` bash
 roslaunch follower debug.launch
 ```
@@ -58,6 +64,7 @@ roslaunch follower debug.launch
 ### Nodes
 follower.launch:
 - follower_node
+- odom_node
 - serial_node
 
 debug.launch:
@@ -76,7 +83,7 @@ debug.launch:
 | /scan           | sensor_msgs/LaserScan         | lidar scan topic                            |
 
 ### ROS Parameters (rosparam):
-All robot parameters are defined in `/config/follower.yaml`. Please refer to the file for more information.
+All robot parameters are defined in `/config/follower.yaml`. Please refer to the file for more information. Rviz config is in `/config/follower.rviz`.
 
 <br>
 
