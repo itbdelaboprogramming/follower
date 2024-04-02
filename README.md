@@ -87,6 +87,11 @@ All robot parameters are defined in `/config/follower.yaml`. Please refer to the
 
 <br>
 
+# Troubleshooting
+- If received error `RuntimeError: Couldn't resolve requests`. Change FPS from 60 to 30 in `follower.yaml`. This is usually due to realsense USB does not support high speed data transfer.
+
+<br>
+
 # Important Informations
 There are 6 ML-based tracker algorithms that can be used, which are:
 ```bash
