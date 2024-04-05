@@ -89,6 +89,7 @@ All robot parameters are defined in `/config/follower.yaml`. Please refer to the
 
 # Troubleshooting
 - If received error `RuntimeError: Couldn't resolve requests`. Change FPS from 60 to 30 in `follower.yaml`. This is usually due to realsense USB does not support high speed data transfer.
+- If distance is detected as `-1.0 m`. It means that the distance of the followed object is not detected.
 
 <br>
 

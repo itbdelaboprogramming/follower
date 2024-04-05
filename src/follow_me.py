@@ -108,7 +108,7 @@ try:
             hw_cmd_msg.right_motor_speed = (0 + max_turn*wheel_distance/(2.0*wheel_radius))*9.55  #in RPM
             hw_cmd_msg.left_motor_speed = (0 - max_turn*wheel_distance/(2.0*wheel_radius))*9.55   #in RPM
             # cmd_vel
-            cmd_vel_msg.linear = 0
+            cmd_vel_msg.linear.x = 0
             cmd_vel_msg.angular.z = max_turn
         elif move_position == 'Center':
             # hw command
@@ -153,5 +153,6 @@ try:
                 break
         rate.sleep()
 
-except:
+except Exception as e:
+    print(e)
     camera.stop()
