@@ -351,7 +351,7 @@ class ObjectTracker(object):
         """
         cx, cy = self.get_target_center()
         if depth is None or cx is None:
-            if self.enable_transducer:
+            if self.enable_transducer and ultrasonic_target_distance > 0.0:
                 return ultrasonic_target_distance
             else:
                 return None
@@ -360,16 +360,12 @@ class ObjectTracker(object):
         elif cy > self.frame_height or cy < 0:
             return None
         else:
-            
-            distance = depth[cy, cx]/1000
-            """
             try:
                 distance = depth[cy, cx]/1000
-            except BaseException as e:
-                print(e)
-                pass
-            """
-            return distance
+                return distance
+            except Exception as e:
+                return None
+            
     
     def is_obstacle_within_threshold(self, depth: np.ndarray, threshold: float):
         """Function to check if there is an obstacle within threshold.
@@ -403,6 +399,6 @@ class ObjectTracker(object):
     
     def get_dark_target_position(self, ch_ultrasonic_distances: list, lidar_distances: list):
         #TODO: add dark area target logic
-        dark_target_direction = 0.0
-        dark_target_distance = 0.0
+        dark_target_direction = -1.0
+        dark_target_distance = -1.0
         return dark_target_direction, dark_target_distance

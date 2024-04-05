@@ -87,6 +87,7 @@ try:
                                                                 dark_target_direction)
         distance = tracker.get_target_distance(depth, dark_target_distance)
         distance = distance if distance is not None else -1.0
+        move_position = 'Hold' if move_position == 'Center' and distance <= tgt_stop_dist else move_position
 
         # Create msg variable
         hw_cmd_msg = HardwareCommand()
@@ -94,38 +95,37 @@ try:
 
         # move command
         if move_position == 'Right':
-            hw_cmd_msg.movement_command = 1
             # hw command
+            hw_cmd_msg.movement_command = 1
             hw_cmd_msg.right_motor_speed = (0 - max_turn*wheel_distance/(2.0*wheel_radius))*9.55  #in RPM
             hw_cmd_msg.left_motor_speed = (0 + max_turn*wheel_distance/(2.0*wheel_radius))*9.55   #in RPM
             # cmd_vel
             cmd_vel_msg.linear.x = 0
-            cmd_vel_msg.angular.z = max_turn
+            cmd_vel_msg.angular.z = -max_turn
         elif move_position == 'Left':
-            hw_cmd_msg.movement_command = 2
             # hw command
+            hw_cmd_msg.movement_command = 2
             hw_cmd_msg.right_motor_speed = (0 + max_turn*wheel_distance/(2.0*wheel_radius))*9.55  #in RPM
             hw_cmd_msg.left_motor_speed = (0 - max_turn*wheel_distance/(2.0*wheel_radius))*9.55   #in RPM
             # cmd_vel
             cmd_vel_msg.linear = 0
-            cmd_vel_msg.angular.z = -max_turn
-        elif move_position == 'Center' and distance > tgt_stop_dist:
-            hw_cmd_msg.movement_command = 3
+            cmd_vel_msg.angular.z = max_turn
+        elif move_position == 'Center':
             # hw command
+            hw_cmd_msg.movement_command = 3
             hw_cmd_msg.right_motor_speed = (max_speed*100.0/wheel_radius - 0)*9.55  #in RPM
             hw_cmd_msg.left_motor_speed = (max_speed*100.0/wheel_radius + 0)*9.55   #in RPM
             # cmd_vel
             cmd_vel_msg.linear.x = max_speed
             cmd_vel_msg.angular.z = 0
         else:
-            hw_cmd_msg.movement_command = 0
             # hw command
+            hw_cmd_msg.movement_command = 0
             hw_cmd_msg.right_motor_speed = 0  #in RPM
             hw_cmd_msg.left_motor_speed = 0   #in RPM
             # cmd_vel
             cmd_vel_msg.linear.x = 0
             cmd_vel_msg.angular.z = 0
-            move_position = 'Hold'
         
         print(tracker.get_target_center(), distance, "m ->", move_position, "->", cam_position)
         
