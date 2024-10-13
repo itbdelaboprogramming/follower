@@ -2,7 +2,7 @@
 import rospy
 from msd700_msgs.msg import HardwareCommand, HardwareState
 from visualization_msgs.msg import Marker
-from geometry_msgs.msg import Point
+from geometry_msgs.msg import Point, PoseStamped
 import numpy as np
 
 class UWB_Data:
@@ -14,8 +14,12 @@ class UWB_Data:
 class FollowerUWB:
     def __init__(self):
         # Publisher/Subscriber
-        self.marker_pub = rospy.Publisher('/uwb_marker', Marker, queue_size=10)
+        self.marker_pub = rospy.Publisher('uwb_marker', Marker, queue_size=10)
+        self.target_pub = rospy.Publisher('uwb_target', PoseStamped, queue_size=10)
         self.hardware_state_sub = rospy.Subscriber('/hardware_state', HardwareState, self.hardware_state_callback, queue_size=10)
+
+        # get param
+        self.debug = rospy.get_param('debug', False)
     
     def hardware_state_callback(self, msg: HardwareState):
         self.dist = msg.uwb_dist
@@ -23,7 +27,22 @@ class FollowerUWB:
         self.theta = msg.uwb_theta
 
         self.publish_visualization()
-    
+
+    def publish_goal(self):
+        new_pose = PoseStamped()
+        new_pose.header.frame_id = "map"
+        new_pose.header.stamp = rospy.Time.now()
+        new_pose.pose.position.x = self.rho * np.cos(self.theta)
+        new_pose.pose.position.y = self.rho * np.sin(self.theta)
+        new_pose.pose.position.z = 0
+        new_pose.pose.orientation.x = 0
+        new_pose.pose.orientation.y = 0
+        new_pose.pose.orientation.z = 0
+        new_pose.pose.orientation.w = 1
+        self.target_pub.publish(new_pose)
+        if self.debug:
+            print("Published Goal")
+
     def publish_visualization(self):
         new_marker = Marker()
         new_marker.header.frame_id = "map"
@@ -49,14 +68,15 @@ class FollowerUWB:
         new_marker.pose.orientation.z = 0
         new_marker.pose.orientation.w = 1
         new_marker.scale.x = 0.1
-        new_marker.scale.y = 0.1
-        new_marker.scale.z = 0.1
+        new_marker.scale.y = 0.2
+        new_marker.scale.z = 1
         new_marker.color.a = 1.0
         new_marker.color.r = 1.0
         new_marker.color.g = 0.0
         new_marker.color.b = 0.0
         self.marker_pub.publish(new_marker)
-        print("Published Marker")
+        if self.debug:
+            print("Published Marker")
 
 if __name__ == '__main__':
     rospy.init_node('follower_uwb')
