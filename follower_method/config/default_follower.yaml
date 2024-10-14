@@ -1,0 +1,9 @@
+follower_node:
+  compute_period: 25
+
+  # mode:
+  # - aruco
+  # - color
+  # - uwb
+  # - auto
+  mode: uwb

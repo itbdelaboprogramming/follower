@@ -1,4 +1,4 @@
-follower_node:
+follower_vision:
   camera_id: 4              # camera id from /dev/video
   camera_fps: 60            # camera fps, set to 30 fps if request could not be resolved
   use_realsense: true       # set false to use regular camera
