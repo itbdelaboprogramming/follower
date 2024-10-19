@@ -14,12 +14,13 @@ class UWB_Data:
 class FollowerUWB:
     def __init__(self):
         # Publisher/Subscriber
-        self.marker_pub = rospy.Publisher('uwb_marker', Marker, queue_size=10)
-        self.target_pub = rospy.Publisher('uwb_target', PoseStamped, queue_size=10)
+        self.marker_pub = rospy.Publisher('/follower/uwb_marker', Marker, queue_size=10)
+        self.target_pub = rospy.Publisher('/follower/uwb_target', PoseStamped, queue_size=10)
         self.hardware_state_sub = rospy.Subscriber('/hardware_state', HardwareState, self.hardware_state_callback, queue_size=10)
 
         # get param
-        self.debug = rospy.get_param('debug', False)
+        self.debug = rospy.get_param('follower_uwb/debug', False)
+        self.frame_id = rospy.get_param('follower_uwb/frame_id', 'map')
     
     def hardware_state_callback(self, msg: HardwareState):
         self.dist = msg.uwb_dist
@@ -27,10 +28,11 @@ class FollowerUWB:
         self.theta = msg.uwb_theta
 
         self.publish_visualization()
+        self.publish_target()
 
-    def publish_goal(self):
+    def publish_target(self):
         new_pose = PoseStamped()
-        new_pose.header.frame_id = "map"
+        new_pose.header.frame_id = self.frame_id
         new_pose.header.stamp = rospy.Time.now()
         new_pose.pose.position.x = self.rho * np.cos(self.theta)
         new_pose.pose.position.y = self.rho * np.sin(self.theta)
@@ -40,8 +42,6 @@ class FollowerUWB:
         new_pose.pose.orientation.z = 0
         new_pose.pose.orientation.w = 1
         self.target_pub.publish(new_pose)
-        if self.debug:
-            print("Published Goal")
 
     def publish_visualization(self):
         new_marker = Marker()
