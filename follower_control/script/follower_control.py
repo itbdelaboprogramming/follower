@@ -51,7 +51,7 @@ class FollowerControl:
         # max_fwd_rpm = (self.max_fwd*100.0 / self.wheel_radius)*9.55
         # m/s * s/min / (2*pi*r * gear_ratio)
         max_fwd_rpm = self.max_fwd * 60.0 / (2.0*math.pi*self.wheel_radius * self.gear_ratio)
-        max_fwd_rpm *= 200 # 200 is a magic number !
+        max_fwd_rpm *= 200 # 200 is a magic number!
         max_rot_rpm = (self.max_rot*self.wheel_distance/(2.0*self.wheel_radius))*9.55
 
         if self.const_speed:
