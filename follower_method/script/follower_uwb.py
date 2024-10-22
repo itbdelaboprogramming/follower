@@ -34,8 +34,8 @@ class FollowerUWB:
         new_pose = PoseStamped()
         new_pose.header.frame_id = self.frame_id
         new_pose.header.stamp = rospy.Time.now()
-        new_pose.pose.position.x = self.rho * np.cos(self.theta)
-        new_pose.pose.position.y = self.rho * np.sin(self.theta)
+        new_pose.pose.position.x = self.rho * np.cos(self.theta/180*np.pi)
+        new_pose.pose.position.y = self.rho * np.sin(self.theta/180*np.pi)
         new_pose.pose.position.z = 0
         new_pose.pose.orientation.x = 0
         new_pose.pose.orientation.y = 0
@@ -57,8 +57,8 @@ class FollowerUWB:
         p1.y = 0
         p1.z = 0
         p2 = Point()
-        p2.x = self.rho * np.cos(self.theta)
-        p2.y = self.rho * np.sin(self.theta)
+        p2.x = self.rho * np.cos(self.theta/180*np.pi)
+        p2.y = self.rho * np.sin(self.theta/180*np.pi)
         p2.z = 0
         new_marker.points.append(p1)
         new_marker.points.append(p2)
