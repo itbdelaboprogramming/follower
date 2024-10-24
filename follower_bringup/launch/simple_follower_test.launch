@@ -1,12 +1,19 @@
 <?xml version="1.0"?>
 <launch>
+    <!-- Hardware Bridge with Firmware-->
+    <include file="$(find follower_hw_bridge)/launch/hardware_bridge.launch">
+        <arg name="port" value="/dev/ttyUSB0"/>
+        <arg name="baud" value="57600"/>
+    </include>
+
+    <!-- Follower Target Publisher -->
     <node pkg="follower_method" type="follower_uwb.py" name="follower_uwb_node" respawn="true"></node>
+
+    <!-- Target to Motor RPM Converter -->
     <rosparam file="$(find follower_control)/config/follower_control.yaml" command="load" />
     <node pkg="follower_control" type="follower_control.py" name="follower_control_node" respawn="true" output="screen"></node>
-    <node pkg="rosserial_python" type="serial_node.py" name="serial_node" respawn="true" output="screen">
-        <param name="port" value="/dev/ttyUSB0"/>
-        <param name="baud" value="57600"/>
-    </node>
-    <rosparam command="load" file="$(find follower_method)/config/follower.yaml" />
+
+    <!-- RViz -->
     <node pkg="rviz" type="rviz" name="rviz" args="-d $(find follower_bringup)/rviz/uwb_follower.rviz" />
+
 </launch>

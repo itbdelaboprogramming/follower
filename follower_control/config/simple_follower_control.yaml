@@ -1,0 +1,18 @@
+simple_follower_control:
+  # Robot Parameters
+  wheel_radius: 2.75
+  wheel_distance: 23.0
+  gear_ratio: 1980.0
+
+  # Robot Tuning
+  constant_speed : true # Constant Forward Speed
+  max_fwd : 1       # m/s
+  max_rot : 0.8     # rad/s
+  max_fwd_rpm : 180 # rpm
+  max_rot_rpm : 70  # rpm
+  kp_fwd : 0.2
+  kp_rot : 0.5
+
+  # Robot Target Tolerance
+  err_fwd : 0.1 # front/back target error
+  err_rot : 0.3 # side to side target error

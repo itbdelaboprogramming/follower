@@ -1,19 +1,4 @@
 follower_control:
-  # Method
-  mode : uwb # uwb / aruco / auto
-
-  # Robot Parameters
-  wheel_radius: 2.75
-  wheel_distance: 23.0
-  gear_ratio: 1980.0
-
-  # Robot Tuning
-  constant_speed : true # Constant Forward Speed
-  max_fwd : 1 # m/s
-  max_rot : 0.8 # rad/s
-  kp_fwd : 0.2
-  kp_rot : 0.5
-
-  # Robot Target Tolerance
-  err_fwd : 0.1 # front/back target error
-  err_rot : 0.3 # side to side target error
+  cmd_vel_topic: '/cmd_vel'
+  target_topic: '/follower/target'
+  twist_mul: 1.0 # Multiplier for target to twist conversion (m to m/s conversion)

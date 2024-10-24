@@ -1,0 +1,6 @@
+follower_odom:
+  wheel_radius: 2.75        # cm (current prototype's wheel has diameter of 5.5 cm approximately)
+  wheel_distance: 23.0      # cm
+  gear_ratio: 1980.0        # ratio
+  revolution_radian: 6.28318531  # rad
+  compute_period: 25        # ms, (jetson max realsense fps is ~40 fps = 25 ms) --> for color detection set to 33 ms

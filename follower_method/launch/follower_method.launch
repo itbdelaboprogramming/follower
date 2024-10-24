@@ -1,0 +1,9 @@
+<launch>
+    <!-- UWB -->
+    <node pkg="follower_method" type="follower_uwb.py" name="follower_uwb" respawn="true"></node>
+    <!-- Vision -->
+    <!-- To do: add vision method -->
+
+    <!-- Main Node -->
+    <node pkg="follower_method" type="follower_node.py" name="follower_node" respawn="true"></node>
+</launch>

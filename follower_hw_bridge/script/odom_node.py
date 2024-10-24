@@ -27,14 +27,14 @@ def hardware_state_callback(msg: HardwareState):
     global right_motor_pulse_delta, left_motor_pulse_delta
     right_motor_pulse_delta = msg.right_motor_pulse_delta
     left_motor_pulse_delta = msg.left_motor_pulse_delta
-hardware_state_sub = rospy.Subscriber('hardware_state', HardwareState, hardware_state_callback)
+hardware_state_sub = rospy.Subscriber('/hardware_state', HardwareState, hardware_state_callback)
 
 # ROS Parameters (Get rosparams loaded from follower.yaml)
-wheel_radius = rospy.get_param("/follower_node/wheel_radius")                # in cm
-wheel_distance = rospy.get_param("/follower_node/wheel_distance")            # in cm
-gear_ratio = rospy.get_param("/follower_node/gear_ratio")
-revolution_radian = rospy.get_param("/follower_node/revolution_radian")
-compute_period  = rospy.get_param("/follower_node/compute_period")
+wheel_radius = rospy.get_param("/follower_odom/wheel_radius")                # in cm
+wheel_distance = rospy.get_param("/follower_odom/wheel_distance")            # in cm
+gear_ratio = rospy.get_param("/follower_odom/gear_ratio")
+revolution_radian = rospy.get_param("/follower_odom/revolution_radian")
+compute_period  = rospy.get_param("/follower_odom/compute_period")
 wheel_radius_m = wheel_radius / 100
 wheel_distance_m = wheel_distance / 100
 
